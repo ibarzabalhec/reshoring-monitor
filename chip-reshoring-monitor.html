@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Semiconductor Reshoring Monitor — Welcome Group</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#0f1620; --panel2:#131c28; --line:#1e2c3c;
+    --txt:#dbe6f0; --dim:#9aabbf; --accent:#46dbe3; --anchor:#36a3ff;
+    --packaging:#f5a623; --materials:#3ddc84; --equipment:#b07cff; --delayed:#ff5d5d; --ix:#e8eef5;
+    --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+  #app{display:flex;flex-direction:column;height:100vh;}
+  header{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 18px;border-bottom:1px solid var(--line);background:var(--panel);}
+  header .brand{display:flex;align-items:baseline;gap:12px;}
+  header h1{font-size:15px;letter-spacing:.05em;margin:0;font-weight:600;color:var(--ix);text-transform:uppercase;}
+  header .tag{font-family:var(--mono);font-size:10px;color:var(--accent);
+    border:1px solid var(--accent);padding:2px 6px;border-radius:3px;letter-spacing:.08em;}
+  header .sub{font-family:var(--mono);font-size:11px;color:var(--dim);}
+  .hright{display:flex;align-items:center;gap:14px;}
+  .themebtn{background:#15a37e;border:1px solid #15a37e;color:#04140f;cursor:pointer;
+    font-family:var(--mono);font-size:13.5px;font-weight:700;letter-spacing:.07em;padding:10px 20px;border-radius:7px;
+    box-shadow:0 2px 8px rgba(21,163,126,.35);transition:background .2s ease,color .2s ease,box-shadow .2s ease;}
+  .themebtn:hover{filter:brightness(1.08);}
+  body.light .themebtn{background:#1a2733;border-color:#1a2733;color:#eef3f8;box-shadow:0 2px 8px rgba(26,39,51,.3);}
+  /* ---- Light theme (Welcome Group palette: green→blue on white) ---- */
+  body.light{
+    --bg:#eef1f5; --panel:#ffffff; --panel2:#eef3f8; --line:#d3dce6;
+    --txt:#23313f; --dim:#5a6a7a; --ix:#0f1b28; --accent:#0f8a7e;
+  }
+  body.light #map{background:#dfe6ee;}
+  body.light .grp{background:#e7eef6;}
+  body.light .card.selected{background:#e3f1ef;box-shadow:inset 3px 0 0 var(--accent);}
+  body.light #timebar,body.light .legend{background:rgba(255,255,255,.95);}
+  body.light .leaflet-popup-content-wrapper,body.light .leaflet-popup-tip{background:#ffffff;border-color:var(--line);color:var(--txt);}
+  body.light .leaflet-tooltip.map-tip{background:rgba(255,255,255,.97);color:var(--ix);border-color:var(--accent);box-shadow:0 2px 10px rgba(0,0,0,.18);}
+  body.light .pin{filter:drop-shadow(0 0 1.5px rgba(0,0,0,.3));}
+  body.light .badge.chips{color:#1c7a48;}
+  #kpis{display:flex;gap:1px;background:var(--line);border-bottom:1px solid var(--line);}
+  .kpi{flex:1;background:var(--panel);padding:9px 16px;}
+  .kpi .v{font-family:var(--mono);font-size:23px;color:var(--ix);font-weight:600;}
+  .kpi .l{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+  .kpi.sortable{cursor:pointer;position:relative;transition:background .12s;}
+  .kpi.sortable:hover{background:var(--panel2);}
+  .kpi.sortable::after{content:"⇅";position:absolute;top:8px;right:12px;font-size:10px;color:#3a4b5e;}
+  .kpi.active{background:var(--panel2);}
+  .kpi.active::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:var(--accent);}
+  .kpi.active .l{color:var(--accent);}
+  .kpi.active::after{color:var(--accent);}
+  #sortcap{font-family:var(--mono);font-size:9.5px;color:var(--accent);text-transform:none;letter-spacing:0;}
+  .kpi .v small{font-size:12px;color:var(--dim);}
+  #main{display:flex;flex:1;min-height:0;}
+  #side{width:450px;min-width:450px;display:flex;flex-direction:column;
+    border-right:1px solid var(--line);background:var(--panel);}
+  #controls{padding:12px 14px;border-bottom:1px solid var(--line);}
+  #controls .row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  #search{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    padding:7px 9px;border-radius:5px;font-size:12px;margin-bottom:9px;}
+  #search::placeholder{color:var(--dim);}
+  /* selected-state filter chips */
+  #statebar{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:9px;}
+  #statebar .sbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-right:2px;}
+  .schip{font-size:12px;padding:4px 9px;border-radius:13px;cursor:pointer;font-weight:600;
+    background:#3a2f12;border:1px solid #d8a73a;color:#ffd86b;user-select:none;}
+  .schip:hover{background:#4a3c18;}
+  .schip.clr{background:transparent;border-color:var(--line);color:var(--dim);font-weight:700;letter-spacing:.05em;}
+  .schip.clr:hover{border-color:var(--delayed);color:var(--delayed);}
+  /* export controls */
+  .chip.xport{background:var(--accent);border-color:var(--accent);color:#04121a;font-weight:700;letter-spacing:.04em;}
+  .chip.xport:hover{filter:brightness(1.1);}
+  /* card checkbox + selected state */
+  .card{display:flex;gap:11px;align-items:flex-start;}
+  .card .cbx{width:18px;height:18px;margin-top:3px;flex:0 0 auto;accent-color:var(--accent);cursor:pointer;}
+  .card .body{flex:1;min-width:0;}
+  .card.selected{background:#10212e;box-shadow:inset 3px 0 0 var(--accent);}
+  .chip{font-family:var(--mono);font-size:10px;padding:4px 8px;border-radius:11px;cursor:pointer;
+    border:1px solid var(--line);background:var(--panel2);color:var(--dim);user-select:none;letter-spacing:.02em;}
+  .chip.on{color:#04121a;font-weight:600;}
+  .chip[data-t="anchor"].on{background:var(--anchor);border-color:var(--anchor);}
+  .chip[data-t="packaging"].on{background:var(--packaging);border-color:var(--packaging);}
+  .chip[data-t="materials"].on{background:var(--materials);border-color:var(--materials);}
+  .chip[data-t="equipment"].on{background:var(--equipment);border-color:var(--equipment);}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+  #feedhead{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;
+    font-size:11px;letter-spacing:.07em;color:var(--dim);text-transform:uppercase;border-bottom:1px solid var(--line);}
+  #feed{overflow-y:auto;flex:1;}
+  /* group section headers (Texas, Advanced packaging, 2026, …) */
+  .grp{position:sticky;top:0;z-index:2;background:#0c141e;padding:10px 16px 8px;
+    font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);
+    border-top:2px solid var(--accent);border-bottom:1px solid var(--line);}
+  .grp .cnt{float:right;color:var(--dim);font-family:var(--mono);font-weight:400;font-size:11.5px;letter-spacing:0;}
+  .card{padding:14px 17px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s;}
+  .card:hover{background:var(--panel2);}
+  .card .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+  .card .co{font-weight:700;color:var(--ix);font-size:15.5px;}
+  .card .date{font-family:var(--mono);font-size:11.5px;color:var(--dim);white-space:nowrap;}
+  .card .loc{font-family:var(--mono);font-size:12.5px;color:var(--accent);margin:3px 0 6px;}
+  .card .sum{font-size:13px;color:var(--txt);line-height:1.55;}
+  .card .meta{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;align-items:center;}
+  .badge{font-family:var(--mono);font-size:11px;padding:3px 7px;border-radius:3px;letter-spacing:.03em;
+    background:var(--panel2);border:1px solid var(--line);color:var(--dim);}
+  .badge.capex{color:var(--ix);border-color:#2c4a63;}
+  .badge.chips{color:#9fe6b6;border-color:#1f4a30;}
+  .badge.delayed{color:var(--delayed);border-color:var(--delayed);}
+  .badge.cre{color:var(--accent);border-color:#1d4a4f;}
+  #mapwrap{flex:1;position:relative;min-width:0;}
+  #map{position:absolute;inset:0;background:#0a0e14;}
+  #timebar{position:absolute;left:14px;right:14px;bottom:14px;z-index:500;background:rgba(15,22,32,.94);
+    border:1px solid var(--line);border-radius:8px;padding:10px 14px;backdrop-filter:blur(4px);}
+  #timebar .tt{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  #timebar .yr{font-family:var(--mono);font-size:13px;color:var(--accent);}
+  #timebar .lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;}
+  #slider{width:100%;accent-color:var(--accent);}
+  #play{background:var(--accent);color:#04121a;border:none;border-radius:4px;font-weight:700;
+    cursor:pointer;font-family:var(--mono);font-size:11px;padding:4px 10px;}
+  .leaflet-popup-content-wrapper{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:8px;}
+  .leaflet-popup-tip{background:var(--panel);border:1px solid var(--line);}
+  .leaflet-popup-content{margin:12px 14px;font-size:13px;line-height:1.55;max-height:360px;overflow-y:auto;}
+  .pop-assoc{margin-top:8px;padding-top:7px;border-top:1px solid var(--line);}
+  .pa-h{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+  .pa-row{margin-bottom:7px;}
+  .pa-cat{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.03em;
+    padding:1px 5px;border-radius:3px;color:#04121a;margin-right:6px;vertical-align:middle;}
+  .pa-Gases{background:#46dbe3;} .pa-Chemicals{background:#f5a623;} .pa-Materials{background:#3ddc84;}
+  .pa-Packaging{background:#b07cff;} .pa-Equipment{background:#36a3ff;} .pa-Logistics{background:#ff8da3;}
+  .pa-Developer{background:#9aabbf;}
+  .pa-name{font-weight:700;font-size:12.5px;}
+  .pa-name a{color:var(--anchor);text-decoration:none;}
+  .pa-name a:hover{text-decoration:underline;}
+  .pa-note{font-size:11.5px;color:var(--dim);line-height:1.4;margin-top:1px;}
+  /* marker fade in/out + hover */
+  .pin{transition:opacity .6s ease, stroke-width .15s ease;
+       filter:drop-shadow(0 0 2px rgba(0,0,0,.55));}
+  .pin.hidden{opacity:0 !important;pointer-events:none;}
+  .pin.dim{opacity:0.3;}                 /* outside selected states: visible but de-emphasized */
+  .pin:hover{stroke-width:4px;opacity:1;}
+  /* golden state contours */
+  .state-poly{transition:fill-opacity .25s ease, stroke-opacity .25s ease, stroke-width .25s ease;}
+  .leaflet-tooltip.map-tip{background:rgba(13,20,30,.96);border:1px solid var(--accent);color:var(--ix);
+    font-family:var(--mono);font-size:10.5px;padding:3px 7px;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.5);}
+  .leaflet-tooltip.map-tip::before{border:none!important;}
+  .pop-co{font-weight:600;color:var(--ix);font-size:13px;}
+  .pop-loc{font-family:var(--mono);font-size:10.5px;color:var(--accent);margin:2px 0 6px;}
+  .pop-fig{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-bottom:6px;}
+  .pop-cre{margin-top:7px;padding-top:7px;border-top:1px solid var(--line);color:var(--txt);font-size:11px;}
+  .pop-cre b{color:var(--accent);}
+  .pop-src{margin-top:8px;padding-top:6px;border-top:1px solid var(--line);}
+  .pop-src a{font-family:var(--mono);font-size:10px;color:var(--anchor);margin-right:10px;}
+  #disclaimer{font-size:10px;color:var(--dim);padding:7px 14px;border-top:1px solid var(--line);background:var(--panel);line-height:1.45;}
+  .legend{position:absolute;top:10px;right:10px;z-index:500;background:rgba(15,22,32,.92);
+    border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:10.5px;backdrop-filter:blur(4px);}
+  .legend div{margin:3px 0;color:var(--dim);}
+  .legend .sz{margin-top:7px;padding-top:6px;border-top:1px solid var(--line);font-size:9.5px;}
+  ::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#22344a;border-radius:5px}
+  ::-webkit-scrollbar-track{background:var(--panel)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <h1>Semiconductor Reshoring Monitor</h1>
+      <span class="tag">WG INDUSTRIAL INTEL</span>
+    </div>
+    <div class="hright">
+      <span class="sub">Anchor fabs &amp; supplier ripple · data current to May 2026</span>
+      <button id="themeBtn" class="themebtn">◐ LIGHT</button>
+    </div>
+  </header>
+
+  <div id="kpis">
+    <div class="kpi"><div class="v" id="kpiCapex">—</div><div class="l">Private / CHIPS capex</div></div>
+    <div class="kpi sortable" data-sort="chrono"><div class="v" id="kpiProjects">—</div><div class="l">Projects · sort by date</div></div>
+    <div class="kpi sortable" data-sort="capex"><div class="v" id="kpiAnchor">—</div><div class="l">Anchor fabs · by capital</div></div>
+    <div class="kpi sortable" data-sort="ripple"><div class="v" id="kpiRipple">—</div><div class="l">Ripple · by industry</div></div>
+    <div class="kpi sortable" data-sort="states"><div class="v" id="kpiStates">—</div><div class="l">States · WG priority</div></div>
+  </div>
+
+  <div id="main">
+    <div id="side">
+      <div id="controls">
+        <div id="statebar"></div>
+        <input id="search" placeholder="Search company, city, state…" />
+        <div class="row" id="typeChips">
+          <span class="chip on" data-t="anchor">● FAB</span>
+          <span class="chip on" data-t="packaging">● PACKAGING</span>
+          <span class="chip on" data-t="materials">● MATERIALS</span>
+          <span class="chip on" data-t="equipment">● EQUIPMENT</span>
+        </div>
+        <div class="row">
+          <span class="chip" id="delaymode">EXCLUDE DELAYED</span>
+        </div>
+        <div class="row" id="exportrow">
+          <span class="chip" id="selAll">SELECT ALL SHOWN</span>
+          <span class="chip" id="selClear">CLEAR</span>
+          <span class="chip xport" id="exportBtn">⬇ EXPORT EXCEL</span>
+        </div>
+      </div>
+      <div id="feedhead"><span id="sortcap">sorted: newest first</span><span id="feedcount">—</span></div>
+      <div id="feed"></div>
+      <div id="disclaimer">
+        Seeded set (~40 projects). Figures: private investment is the company-stated total
+        (often multi-phase, multi-year); CHIPS is the federal award (finalized or proposed). Sourced from
+        company filings/press, Commerce/NIST, and the Manufacturing Dive CHIPS tracker. Not investment advice.
+        <a id="dataBtn" style="color:var(--accent);cursor:pointer;text-decoration:underline;">Download data file</a>
+      </div>
+    </div>
+
+    <div id="mapwrap">
+      <div id="map"></div>
+      <div class="legend">
+        <div><span class="dot" style="background:var(--anchor)"></span>Fab</div>
+        <div><span class="dot" style="background:var(--packaging)"></span>Advanced packaging</div>
+        <div><span class="dot" style="background:var(--materials)"></span>Materials / wafers / gases</div>
+        <div><span class="dot" style="background:var(--equipment)"></span>Equipment / consumables</div>
+        <div class="sz">○ size ∝ private capex · red ring = delayed</div>
+      </div>
+      <div id="timebar">
+        <div class="tt">
+          <span class="lbl">Latest milestone as of</span>
+          <span class="yr" id="yrLabel">2026</span>
+          <button id="play">▶ PLAY</button>
+        </div>
+        <input id="slider" type="range" min="2021" max="2026" step="1" value="2026" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Sources: each event carries two URLs where available (primary + corroborating).
+// Dataset v2 — ~30 projects, data current to May 2026.
+const TRK="https://www.manufacturingdive.com/news/chips-and-science-act-tracker-semiconductor-manufacturing/734039/";
+const EVENTS = [
+  {co:"Micron", site:"White Pine megafab (up to 4 fabs)", city:"Clay", st:"NY", lat:43.183, lng:-76.176,
+   type:"anchor", capex:100, chips:6.1, date:"2026-01", delayed:false, sf:"1,400-acre White Pine Commerce Park",
+   sum:"Broke ground Jan 16, 2026 in Onondaga County. Up to four leading-edge memory fabs; largest private investment in NY history; part of Micron's ~$200B U.S. plan.",
+   cre:"Long build horizon. Syracuse-area industrial land and contractor demand lead the fab by several years.",
+   src:["https://www.constructiondive.com/news/micron-break-ground-new-york-semiconductor-fab/809171/","https://www.governor.ny.gov/news/promise-progress-governor-hochul-celebrates-groundbreaking-microns-semiconductor-manufacturing"]},
+
+  {co:"TSMC", site:"Arizona gigafab (6 fabs)", city:"Phoenix", st:"AZ", lat:33.728, lng:-112.105,
+   type:"anchor", capex:165, chips:6.6, date:"2026-04", delayed:false, sf:"~1,100-acre campus (+~900 acres of expansion land)",
+   sum:"Fab 2 construction completed Apr 2026; 3nm equipment install for the next fab is running ahead of schedule with production targeted 2H2027. Total U.S. commitment $165B.",
+   cre:"Densest, most mature U.S. cluster. Supplier, packaging and gas demand is active in North Phoenix / Peoria now, not later.",
+   src:["https://pr.tsmc.com/english/news/3210","https://www.tomshardware.com/tech-industry/semiconductors/tsmc-brings-its-most-advanced-chipmaking-node-to-the-us-yet-to-begin-equipment-installation-for-3mn-months-ahead-of-schedule-arizona-fab-slated-for-production-in-2027"]},
+
+  {co:"Coherent", site:"SiC substrate expansion", city:"Easton", st:"PA", lat:40.688, lng:-75.221,
+   type:"materials", capex:null, chips:0.112, date:"2026-01", delayed:false,
+   sum:"A $79M expansion (Jan 2026) of an existing materials plant in Easton, PA, with related cleanroom work in Sherman, TX. Makes materials that go into power chips.",
+   cre:"A specialty-manufacturing expansion in eastern Pennsylvania. Outside WG's markets, but a marker of where chip-materials demand is landing.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases/2024/12/biden-harris-administration-announce-preliminary-terms-coherent"]},
+
+  {co:"Samsung", site:"Taylor campus", city:"Taylor", st:"TX", lat:30.570, lng:-97.409,
+   type:"anchor", capex:44, chips:4.7, date:"2025-09", delayed:false, sf:"~1,200-acre campus (annexed for the site)",
+   sum:"Full construction resumed after a 2024 pause; 2026 operational target. A Tesla AI6 foundry deal (~$16.5B) supplied the anchor customer the site had lacked.",
+   cre:"Core Texas Triangle (Williamson County). The Tesla offtake reduces ramp risk that had stalled the project.",
+   src:["https://www.tomshardware.com/tech-industry/semiconductors/samsungs-taylor-texas-fab-could-herald-a-breakthrough-for-the-chipmaker-company-plans-2026-risk-production-new-production-flows-pellicles-for-euv-patterning-as-site-targets-50-000-wspm",TRK]},
+
+  {co:"GlobalFoundries", site:"Fab 8 expansion", city:"Malta", st:"NY", lat:42.967, lng:-73.790,
+   type:"anchor", capex:16, chips:1.5, date:"2025-06", delayed:false, sf:"358,000 SF new fab (Fab 8 campus)",
+   sum:"$16B across NY + VT. New 358,000 SF fab in Malta triples capacity; 1,500+ direct jobs. Customers include Apple, AMD, Qualcomm, GM, SpaceX.",
+   cre:"Saratoga County brownfield expansion — nearest-term, lowest-execution-risk of the New York fab projects.",
+   src:["https://www.governor.ny.gov/news/governor-hochul-celebrates-globalfoundries-116-billion-investment-expand-semiconductor",TRK]},
+
+  {co:"GlobalFoundries", site:"Essex Junction modernization", city:"Essex Junction", st:"VT", lat:44.490, lng:-73.110,
+   type:"anchor", capex:4, chips:1.5, date:"2025-06", delayed:false,
+   sum:"Modernization and added capacity for specialty wireless and optical chips, part of GF's $16B NY+VT program.",
+   cre:"A New England specialty plant — niche end-markets, outside WG's footprint; shown for the national picture.",
+   src:["https://vtdigger.org/2025/06/04/globalfoundries-to-invest-16b-in-chip-manufacturing-in-vermont-and-new-york/",TRK]},
+
+  {co:"Micron", site:"Manassas expansion", city:"Manassas", st:"VA", lat:38.751, lng:-77.475,
+   type:"anchor", capex:7, chips:0.275, date:"2025-06", delayed:false,
+   sum:"Expansion and modernization of Micron's existing Virginia memory plant, part of its ~$200B U.S. plan.",
+   cre:"Northern Virginia — uniquely inside the largest U.S. data-center market, stacking memory supply against AI demand. Adjacent to, not in, WG's markets.",
+   src:["https://www.nist.gov/news-events/news/2025/06/president-trump-secures-200b-investment-micron-technology-memory-chip",TRK]},
+
+  {co:"Intel", site:"Ohio One (Mod 1/2)", city:"New Albany", st:"OH", lat:40.082, lng:-82.808,
+   type:"anchor", capex:28, chips:7.9, date:"2025-02", delayed:true, sf:"~1,000-acre mega-site (room for up to 8 fabs)",
+   sum:"~$28B committed against a >$100B long-term vision. Construction slowed: first fab now 2030, high-volume 2031. CHIPS award (~$7.9B) restructured into a U.S. 9.9% equity stake in Aug 2025.",
+   cre:"Demand deferred roughly 4-5 years. Watchlist, not a near-term land thesis.",
+   src:["https://www.manufacturingdive.com/news/intel-delays-new-albany-ohio-chip-manufacturing-project-again-2030-2031/741321/","https://www.cnbc.com/2025/08/19/trump-administration-weighs-10percent-stake-in-intel-via-chip-act-grants.html"]},
+
+  {co:"Coherent / Infinera", site:"Photonics & packaging", city:"Bethlehem", st:"PA", lat:40.626, lng:-75.370,
+   type:"packaging", capex:null, chips:0.093, date:"2025-01", delayed:false,
+   sum:"Chip assembly and components work in Bethlehem, PA and San Jose, CA, tied to optical-networking and data-center gear.",
+   cre:"A small back-end footprint in the Lehigh Valley — part of an emerging Northeast cluster, not a WG market today.",
+   src:[TRK,"https://www.nist.gov/chips"]},
+
+  {co:"Hemlock Semiconductor", site:"Polysilicon crystal plant", city:"Hemlock", st:"MI", lat:43.443, lng:-84.052,
+   type:"materials", capex:null, chips:0.325, date:"2025-01", delayed:false,
+   sum:"A new plant making the ultra-pure silicon that chip wafers are made from; $325M federal award (Jan 2025).",
+   cre:"A heavy-industrial materials plant in mid-Michigan — large, power-hungry parcels. Shows the supply chain reshoring all the way upstream of the fabs.",
+   src:[TRK,"https://en.wikipedia.org/wiki/CHIPS_and_Science_Act"]},
+
+  {co:"Edwards Vacuum", site:"Dry vacuum pump plant", city:"Basom", st:"NY", lat:43.02, lng:-78.42,
+   type:"equipment", capex:null, chips:0.018, date:"2025-01", delayed:false,
+   sum:"A plant making pumps and exhaust systems that every chip fab needs, inside the Genesee County STAMP industrial park.",
+   cre:"An equipment maker taking light-industrial space in a megasite — the mid-box / flex product WG builds, here in western NY.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases/2025/01"]},
+
+  {co:"HP", site:"Microfluidics / semis", city:"Corvallis", st:"OR", lat:44.564, lng:-123.262,
+   type:"anchor", capex:null, chips:0.053, date:"2025-01", delayed:false,
+   sum:"Expansion of HP's long-running Corvallis, Oregon chip and printhead operations.",
+   cre:"A smaller, mature Oregon site outside WG's markets.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases/2025/01"]},
+
+  {co:"Texas Instruments", site:"Sherman (SM1-SM4)", city:"Sherman", st:"TX", lat:33.635, lng:-96.625,
+   type:"anchor", capex:30, chips:1.6, date:"2025-06", delayed:false, sf:"~1,200-acre site (four 300mm fabs planned)",
+   sum:"Up to four 300mm fabs; early production phases began 2025. Part of TI's $60B / seven-fab U.S. program (TX + UT). Analog and embedded essential chips.",
+   cre:"North Texas / Grayson County. Foundational-node fabs run long and steady — durable supplier demand, less AI-cycle exposure.",
+   src:["https://www.semi.org/en/semi-press-release/eighteen-new-semiconductor-fabs-to-start-construction-in-2025-semi-reports",TRK]},
+
+  {co:"Texas Instruments", site:"Lehi (LFAB2)", city:"Lehi", st:"UT", lat:40.391, lng:-111.851,
+   type:"anchor", capex:11, chips:1.6, date:"2024-12", delayed:false,
+   sum:"Second 300mm fab adjacent to the existing Lehi site, within TI's $60B program.",
+   cre:"Silicon Slopes. Establishes a secondary analog cluster outside Texas.",
+   src:["https://www.blackridgeresearch.com/blog/latest-list-of-largest-new-semiconductor-fabs-foundries-in-the-us-united-states",TRK]},
+
+  {co:"SK Hynix", site:"HBM advanced packaging + R&D", city:"West Lafayette", st:"IN", lat:40.425, lng:-86.908,
+   type:"packaging", capex:3.87, chips:0.458, date:"2025-08", delayed:false,
+   sum:"The first U.S. plant to package high-performance AI memory chips — ~$3.87B, with Purdue University. Site work began late 2025; production around 2028.",
+   cre:"A brand-new packaging hub forming in Indiana where none existed — the kind of anchor that pulls suppliers and flex space in behind it. Worth watching.",
+   src:["https://news.skhynix.com/sk-hynix-signs-investment-agreement-of-advanced-chip-packaging-with-indiana/","https://www.nist.gov/chips/sk-hynix-indiana-west-lafayette"]},
+
+  {co:"Micron", site:"Boise leading-edge fabs", city:"Boise", st:"ID", lat:43.527, lng:-116.410,
+   type:"anchor", capex:25, chips:6.1, date:"2025-06", delayed:false,
+   sum:"Two leading-edge high-volume memory fabs co-located with Micron HQ and R&D.",
+   cre:"Treasure Valley. HQ + R&D + fab concentration; secondary to the NY megafab but real near-term construction.",
+   src:["https://www.sec.gov/Archives/edgar/data/0000723125/000110465925058741/tm2517778d1_ex99-1.htm",TRK]},
+
+  {co:"Samsung", site:"Austin (existing + uplift)", city:"Austin", st:"TX", lat:30.391, lng:-97.690,
+   type:"anchor", capex:17, chips:4.7, date:"2024-12", delayed:false,
+   sum:"Existing Austin foundry anchoring the broader Austin-Taylor cluster; Texas plans span up to a dozen fabs across both sites over time.",
+   cre:"Austin metro. With Taylor, forms a concentrated Texas Triangle demand zone.",
+   src:["https://gov.texas.gov/news/post/governor-abbott-announces-texas-semiconductor-innovation-fund-grant-to-samsung-austin-semiconductor",TRK]},
+
+  {co:"Bosch", site:"SiC power-semi conversion", city:"Roseville", st:"CA", lat:38.752, lng:-121.288,
+   type:"anchor", capex:1.9, chips:0.225, date:"2024-12", delayed:false,
+   sum:"Conversion of an existing plant to make power chips for vehicles and industry; ~$1.9B, ~700 jobs.",
+   cre:"A brownfield conversion near Sacramento — auto / industrial demand, outside WG's markets.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases/2024/12/biden-harris-administration-announces-preliminary-terms-bosch-advance"]},
+
+  {co:"GlobalWafers / MEMC", site:"300mm silicon + SOI wafers", city:"St. Peters", st:"MO", lat:38.780, lng:-90.626,
+   type:"materials", capex:null, chips:0.406, date:"2024-12", delayed:false,
+   sum:"New plants making the blank silicon wafers fabs build on, in Missouri and Texas; some output serves defense and aerospace.",
+   cre:"One of the few new domestic wafer sources. The Texas site is in WG's home state — a materials-plant land play worth tracking.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases/2024/12/biden-harris-administration-announces-chips-incentives-awards"]},
+
+  {co:"Amkor Technology", site:"OSAT advanced packaging", city:"Peoria", st:"AZ", lat:33.706, lng:-112.323,
+   type:"packaging", capex:7, chips:0.407, date:"2025-10", delayed:false, sf:"171-acre campus · 750,000+ SF cleanroom (two phases)",
+   sum:"Plan scaled to ~$7B / ~3,000 jobs at the Peoria Innovation Core — the largest U.S. outsourced advanced-packaging and test campus. Co-located with TSMC Arizona; Apple is the largest customer.",
+   cre:"The clearest example of back-end packaging following a front-end fab. Pulls flex, logistics and bonded warehousing — the demand WG can build for.",
+   src:["https://ir.amkor.com/news-releases/news-release-details/amkor-announces-new-site-us-semiconductor-advanced-packaging-and",TRK]},
+
+  {co:"Entegris", site:"FOUP wafer-carrier plant", city:"Colorado Springs", st:"CO", lat:38.834, lng:-104.821,
+   type:"equipment", capex:null, chips:0.077, date:"2024-12", delayed:false,
+   sum:"New plant producing front-opening unified pods (FOUPs) that secure wafers in transit; serves Intel, TSMC, Micron, GlobalFoundries.",
+   cre:"Colorado consumables node — a supplier that follows fabs nationally rather than one cluster.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases/2024/12/biden-harris-administration-announces-chips-incentives-awards"]},
+
+  {co:"Absolics (SKC)", site:"Glass substrate plant", city:"Covington", st:"GA", lat:33.597, lng:-83.860,
+   type:"packaging", capex:0.3, chips:0.175, date:"2024-12", delayed:false, sf:"120,000 SF facility (~200 jobs)",
+   sum:"A 120,000 SF, ~$300M plant making advanced chip-packaging materials; aims to cut reliance on Asian supply and serves defense work. Federal support raised to $175M.",
+   cre:"A packaging-materials plant in metro Atlanta — squarely in WG's Georgia footprint. Early-stage, but a direct in-market data point.",
+   src:[TRK,"https://www.nist.gov/news-events/news/2024/12/biden-harris-administration-announces-chips-incentives-awards-absolics-and"]},
+
+  {co:"Wolfspeed", site:"JP / Siler City (SiC materials)", city:"Siler City", st:"NC", lat:35.723, lng:-79.462,
+   type:"materials", capex:5, chips:0.75, date:"2024-10", delayed:false,
+   sum:"Up to $5B plant making the materials for power chips, on a 350-acre site (phase 1 ~$2B). The same federal award also covers a New York plant.",
+   cre:"A large-parcel materials campus in Chatham County, NC — right in WG's Carolinas footprint. Big-land, power-heavy siting is a distinct WG play.",
+   src:["https://www.phcppros.com/articles/17786-us-semiconductor-building-boom-underway",TRK]},
+
+  {co:"Wolfspeed", site:"Mohawk Valley SiC device fab", city:"Marcy", st:"NY", lat:43.17, lng:-75.27,
+   type:"anchor", capex:null, chips:0.75, date:"2024-10", delayed:false,
+   sum:"A plant making power chips for electric vehicles in New York's Mohawk Valley, paired with the North Carolina materials plant.",
+   cre:"A power-chip plant in upstate NY — modest scale, EV-driven, outside WG's markets.",
+   src:[TRK,"https://www.phcppros.com/articles/17786-us-semiconductor-building-boom-underway"]},
+
+  {co:"X-Fab", site:"SiC foundry expansion", city:"Lubbock", st:"TX", lat:33.578, lng:-101.855,
+   type:"anchor", capex:null, chips:0.05, date:"2024-12", delayed:false,
+   sum:"Expansion of the only U.S. high-volume foundry for power chips used in cars and industrial equipment, in Lubbock.",
+   cre:"A chip plant in West Texas — WG's home state, though well outside the major metros.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases/2024/12/biden-harris-administration-announce-preliminary-terms-coherent"]},
+
+  {co:"Polar Semiconductor", site:"Capacity expansion", city:"Bloomington", st:"MN", lat:44.840, lng:-93.298,
+   type:"anchor", capex:null, chips:0.123, date:"2024-09", delayed:false,
+   sum:"Roughly doubling output of sensor and power chips at an existing Minnesota plant.",
+   cre:"A brownfield, near-term expansion in the Twin Cities — steady demand, outside WG's footprint.",
+   src:[TRK,"https://www.commerce.gov/news/press-releases"]},
+
+  {co:"Intel", site:"Ocotillo (Fab 52/62)", city:"Chandler", st:"AZ", lat:33.302, lng:-111.843,
+   type:"anchor", capex:20, chips:7.9, date:"2024-03", delayed:false,
+   sum:"Two leading-edge fabs at the existing Ocotillo campus (part of Intel's multi-state CHIPS award covering AZ, NM, OH, OR).",
+   cre:"Reinforces Greater Phoenix fab density alongside TSMC.",
+   src:["https://www.gpec.org/industries-operations/industries-in-greater-phoenix/semiconductors/",TRK]},
+
+  {co:"SK Siltron CSS", site:"SiC wafer expansion", city:"Bay City", st:"MI", lat:43.555, lng:-83.953,
+   type:"materials", capex:0.6, chips:null, date:"2022-07", delayed:false,
+   sum:"Expansion of a plant making the specialty wafers used in electric-vehicle and power electronics, in Bay City, MI.",
+   cre:"An EV / power-chip materials plant in Michigan — large-parcel industrial tied to the auto supply chain.",
+   src:["https://www.semiconductors.org/chip-supply-chain-investments/",TRK]},
+
+  {co:"Linde", site:"On-site industrial-gas plants", city:"Phoenix", st:"AZ", lat:33.760, lng:-112.150,
+   type:"materials", capex:0.6, chips:null, date:"2022-05", delayed:false,
+   sum:"A $600M complex of on-site plants producing the ultra-pure gases the fabs run on, under a long-term TSMC contract; operating since 2022 and feeding the first two fabs.",
+   cre:"On-site industrial gas is a hard, capital-heavy commitment — a reliable sign a cluster is real and here to stay.",
+   src:["https://www.linde.com/news-and-media/2021/linde-signs-long-term-agreement-to-supply-new-world-class-semiconductor-manufacturing-complex-in-the-u-s","https://www.gasworld.com/story/linde-signs-deal-to-supply-new-semiconductor-plant-in-arizona/2092495.article/"]},
+
+  {co:"Advanced Process Solutions", site:"North Texas supply plant", city:"Van Alstyne", st:"TX", lat:33.421, lng:-96.581,
+   type:"equipment", capex:0.04, chips:null, date:"2026-06", delayed:false, sf:"$40M plant, Cold Springs Industrial Park",
+   sum:"A $40M plant in Van Alstyne to supply the North Texas chip industry; construction runs summer 2026 into early 2027.",
+   cre:"A supplier plant rising next to the TI Sherman cluster — squarely in WG's North Texas market and exactly the in-footprint demand a fab pulls in behind it.",
+   src:["https://www.bisnow.com/dallas-ft-worth/news/industrial/advanced-process-solutions-to-build-40m-plant-to-supply-north-texas-semiconductor-industry-134707","https://gov.texas.gov/business/page/recent-project-announcements"]},
+
+  {co:"LTD Material", site:"Austin supply plant", city:"Austin", st:"TX", lat:30.270, lng:-97.745,
+   type:"materials", capex:0.025, chips:null, date:"2026-01", delayed:false, sf:"88,000 SF facility (~40 jobs)",
+   sum:"An 88,000 SF chip-materials plant in Austin; a $25M investment backed by a state grant.",
+   cre:"A right-sized materials tenant in the Austin–Taylor cluster — the kind of mid-box industrial space in WG's Texas wheelhouse.",
+   src:["https://www.kbtx.com/2026/01/30/focus-four-texas-awards-1-million-grant-austin-semiconductor-supplier/","https://gov.texas.gov/business/page/recent-project-announcements"]},
+
+  {co:"Coherent", site:"Sherman wafer line (TX)", city:"Sherman", st:"TX", lat:33.662, lng:-96.592,
+   type:"materials", capex:0.154, chips:null, date:"2026-01", delayed:false, sf:"part of an existing ~700,000 SF Sherman plant",
+   sum:"A $154M expansion making specialty wafers for optical and telecom chips at Coherent's existing Sherman, TX plant; backed by a state grant.",
+   cre:"Specialty-materials growth inside WG's North Texas market, alongside TI Sherman — a documented in-footprint expansion.",
+   src:["https://gov.texas.gov/news/post/governor-abbott-announces-texas-semiconductor-innovation-fund-grant-to-coherent","https://www.bisnow.com/dallas-ft-worth/news/deal-sheet/texas-instruments-begins-production-at-semiconductor-facility-in-sherman-the-dfw-deal-sheet-132487"]},
+
+  {co:"Wacker", site:"Charleston polysilicon site", city:"Charleston", st:"TN", lat:35.283, lng:-84.755,
+   type:"materials", capex:2.5, chips:null, date:"2016-04", delayed:false, sf:"550-acre site (~650+ jobs)",
+   sum:"Wacker's $2.5B, 550-acre plant makes the ultra-pure silicon used in chips and solar — Tennessee's largest-ever private investment, expanded in stages since.",
+   cre:"The anchor chip-materials site in WG's Tennessee market. Large-parcel, power-heavy industrial — watch for the next expansion phase.",
+   src:["https://www.wacker.com/cms/en-us/about-wacker/production-sites/charleston.html","https://en.wikipedia.org/wiki/Wacker_Chemie"]}
+];
+
+const COLORS={anchor:'#36a3ff',packaging:'#f5a623',materials:'#3ddc84',equipment:'#b07cff'};
+const TLABEL={anchor:'Fab',packaging:'Advanced packaging',materials:'Materials',equipment:'Equipment'};
+let active={anchor:true,packaging:true,materials:true,equipment:true};
+let excludeDelayed=false, query="", year=2026;
+
+// ---- Sort state (driven by clicking the top ribbon) ----
+let sortMode='chrono';      // chrono | capex | ripple | states
+let chronoDir=1;            // 1 = newest first, -1 = oldest first
+
+// Welcome Group priority — WG's actual footprint first (TX home market, then GA, NC, SC, TN),
+// then other reshoring states by relevance. Edit freely if priorities shift.
+const WG_STATE_RANK={TX:1,GA:2,NC:3,SC:4,TN:5,AZ:6,UT:7,ID:8,MN:9,IN:10,MO:11,CO:12,MI:13,PA:14,OH:15,VA:16,NY:17,VT:18,CA:19,OR:20,NM:21};
+// Ripple industry grouping order (fabs sink to the bottom in this view).
+const CAT_ORDER={packaging:1,materials:2,equipment:3,anchor:9};
+
+const STATE_NAME={TX:'Texas',AZ:'Arizona',NC:'North Carolina',GA:'Georgia',UT:'Utah',ID:'Idaho',
+  MN:'Minnesota',IN:'Indiana',MO:'Missouri',CO:'Colorado',MI:'Michigan',PA:'Pennsylvania',
+  OH:'Ohio',VA:'Virginia',NY:'New York',VT:'Vermont',CA:'California',OR:'Oregon',NM:'New Mexico'};
+const NAME2ABBR=Object.fromEntries(Object.entries(STATE_NAME).map(([a,n])=>[n,a]));
+
+// Associated companies = the suppliers/partners with heavy industrial-real-estate / build-to-suit
+// relevance that cluster around each anchor. Keyed by the anchor's company name.
+const ASSOC_BY_CO={
+  'TSMC':[
+    {name:'Linde',cat:'Gases',url:'https://www.linde.com',note:'On-site ultra-high-purity gas plants ($600M) under a long-term TSMC supply contract, north Phoenix.'},
+    {name:'Air Liquide',cat:'Gases',url:'https://www.airliquide.com',note:'On-site industrial gas supply to the Phoenix fabs.'},
+    {name:'Sunlit Chemical',cat:'Chemicals',url:'https://www.sunlitchemical.com',note:'North Phoenix plant; 900,000 SF across 27 acres at full build-out.'},
+    {name:'Rinchem',cat:'Logistics',url:'https://www.rinchem.com',note:'Specialty chemical and gas warehousing / 3PL; bonded, hazmat-rated distribution space.'},
+    {name:'Sumitomo Chemical',cat:'Materials',url:'https://www.sumitomo-chem.co.jp/english/',note:'Photoresist supplier weighing U.S. capacity near the cluster.'},
+    {name:'LCY Chemical',cat:'Chemicals',url:'https://www.lcygroup.com',note:'Acquired land in Casa Grande to supply the Phoenix fabs.'},
+    {name:'Solvay',cat:'Chemicals',url:'https://www.solvay.com',note:'Casa Grande land position for specialty chemicals.'},
+    {name:'Topco Scientific',cat:'Materials',url:'https://www.topco-global.com',note:'Materials distribution co-locating in Casa Grande.'},
+    {name:'Amkor Technology',cat:'Packaging',url:'https://www.amkor.com',note:'~$7B OSAT campus in Peoria; 171 acres, 750,000+ SF cleanroom (tracked here).'},
+    {name:'Applied Materials',cat:'Equipment',url:'https://www.appliedmaterials.com',note:'Process-tool maker with service and spares operations near the cluster.'},
+    {name:'Lam Research',cat:'Equipment',url:'https://www.lamresearch.com',note:'Etch and deposition tools plus a field-service footprint.'}
+  ],
+  'Intel':[
+    {name:'Air Products',cat:'Gases',url:'https://www.airproducts.com',note:'Industrial gases supplier co-locating to serve the Ohio campus.'},
+    {name:'Applied Materials',cat:'Equipment',url:'https://www.appliedmaterials.com',note:'Process equipment and field service near New Albany.'},
+    {name:'Lam Research',cat:'Equipment',url:'https://www.lamresearch.com',note:'Etch/deposition tools and service operations.'},
+    {name:'Ultra Clean Holdings',cat:'Equipment',url:'https://www.uct.com',note:'Critical fab subsystems and cleanroom assembly.'},
+    {name:'DSV',cat:'Logistics',url:'https://www.dsv.com',note:'3PL handling inbound equipment and materials; warehouse/distribution space.'}
+  ],
+  'Micron':[
+    {name:'Air Products',cat:'Gases',url:'https://www.airproducts.com',note:'Bulk and specialty gas supply for the memory megafab.'},
+    {name:'Edwards Vacuum',cat:'Equipment',url:'https://www.edwardsvacuum.com',note:'Vacuum-pump plant at the Genesee County STAMP site (tracked here).'},
+    {name:'Corning',cat:'Materials',url:'https://www.corning.com',note:'New York glass and optical materials maker positioned to serve the cluster.'},
+    {name:'Applied Materials',cat:'Equipment',url:'https://www.appliedmaterials.com',note:'Tool service and spares operations as the Clay megafab ramps.'}
+  ],
+  'Samsung':[
+    {name:'Soulbrain',cat:'Chemicals',url:'https://www.soulbrain.co.kr',note:'~$549M precision-chemical materials plant in Texas.'},
+    {name:'Dongjin Semichem',cat:'Chemicals',url:'https://www.dongjin.com',note:'Texas production base with an announced expansion.'},
+    {name:'Fine Semitech',cat:'Materials',url:'https://www.google.com/search?q=Fine+Semitech+Texas+semiconductor',note:'Materials and components supplier establishing Texas operations.'},
+    {name:'Hanyang ENG',cat:'Equipment',url:'https://www.google.com/search?q=Hanyang+ENG+semiconductor+Texas',note:'Fab equipment and facilities partner setting up locally.'},
+    {name:'iMarket America (IMA)',cat:'Developer',url:'https://www.google.com/search?q=iMarket+America+Gradiant+Technology+Park+Taylor+Texas',note:'Developing the Gradiant Technology Park supplier complex near Taylor — a market comp.'}
+  ],
+  'Texas Instruments':[
+    {name:'Linde',cat:'Gases',url:'https://www.linde.com',note:'Bulk industrial gas supply for the Sherman 300mm fabs.'},
+    {name:'Air Liquide',cat:'Gases',url:'https://www.airliquide.com',note:'Industrial gas supply across the North Texas fabs.'},
+    {name:'Applied Materials',cat:'Equipment',url:'https://www.appliedmaterials.com',note:'Process-tool service footprint forming in North Texas.'},
+    {name:'Amkor Technology',cat:'Packaging',url:'https://www.amkor.com',note:'Assembly/test capacity that mature-node analog output feeds.'}
+  ],
+  'GlobalFoundries':[
+    {name:'Air Products',cat:'Gases',url:'https://www.airproducts.com',note:'Industrial gas supply to the Malta Fab 8 campus.'},
+    {name:'Edwards Vacuum',cat:'Equipment',url:'https://www.edwardsvacuum.com',note:'Regional vacuum-pump manufacturing (Basom, NY).'},
+    {name:'Qnity Electronics',cat:'Materials',url:'https://www.google.com/search?q=Qnity+Electronics+semiconductor+materials',note:'Chip-materials supplier (DuPont electronics spin-off).'},
+    {name:'HD MicroSystems',cat:'Materials',url:'https://www.google.com/search?q=HD+MicroSystems',note:'Advanced chip-packaging materials maker.'}
+  ]
+};
+
+// Fallback for the supplier / standalone projects: the trades that cluster around a plant of
+// each type — the kind of industrial tenants WG actually builds for. Keeps every card useful.
+const ASSOC_BY_TYPE={
+  materials:[
+    {name:'Air Products',cat:'Gases',url:'https://www.airproducts.com',note:'Bulk and specialty gas plants usually co-locate with materials and wafer makers.'},
+    {name:'Rinchem',cat:'Logistics',url:'https://www.rinchem.com',note:'Bonded chemical and gas warehousing — hazmat-rated space WG can develop.'},
+    {name:'Cleanroom / MEP contractors',cat:'Equipment',url:'https://www.google.com/search?q=cleanroom+MEP+contractors+semiconductor',note:'Build-out trades that follow a new plant into its submarket.'}
+  ],
+  packaging:[
+    {name:'Rinchem',cat:'Logistics',url:'https://www.rinchem.com',note:'Bonded logistics and warehousing for packaging materials and components.'},
+    {name:'Air Products',cat:'Gases',url:'https://www.airproducts.com',note:'Gas supply for assembly and test lines.'},
+    {name:'Supplier flex / staffing',cat:'Equipment',url:'https://www.google.com/search?q=semiconductor+packaging+supplier+park',note:'Smaller suppliers and service firms that take flex space near back-end plants.'}
+  ],
+  equipment:[
+    {name:'DSV',cat:'Logistics',url:'https://www.dsv.com',note:'Third-party logistics and distribution space serving equipment makers.'},
+    {name:'Machine shops / metal fab',cat:'Equipment',url:'https://www.google.com/search?q=semiconductor+equipment+machine+shop+supplier',note:'Light-industrial suppliers that orbit tool makers — classic WG flex product.'}
+  ],
+  anchor:[
+    {name:'Air Products',cat:'Gases',url:'https://www.airproducts.com',note:'On- or near-site industrial gas supply that any fab requires.'},
+    {name:'Rinchem',cat:'Logistics',url:'https://www.rinchem.com',note:'Bonded chemical and gas warehousing — a core WG-style build-to-suit.'},
+    {name:'Applied Materials',cat:'Equipment',url:'https://www.appliedmaterials.com',note:'Process-tool service and spares operations that follow fabs.'}
+  ]
+};
+function assocFor(e){ return ASSOC_BY_CO[e.co] || ASSOC_BY_TYPE[e.type] || []; }
+
+// Map-driven state filter (multi-select). Empty = show all.
+let selectedStates=new Set();
+const statesByAbbr={};
+const stateSel={color:'#ffd86b',weight:3,opacity:1,fillColor:'#ffcf5c',fillOpacity:0.28,className:'state-poly'};
+
+// Build the feed's grouped sections (with headers) based on the active sort.
+function groupsFor(vis){
+  const cap=e=>(e.capex||0);
+  if(sortMode==='states'){
+    const r=e=>WG_STATE_RANK[e.st]||99;
+    const order=[...new Set(vis.slice().sort((a,b)=>r(a)-r(b)).map(e=>e.st))];
+    return order.map(st=>({label:STATE_NAME[st]||st,
+      items:vis.filter(e=>e.st===st).sort((a,b)=>b.date.localeCompare(a.date))}));
+  }
+  if(sortMode==='ripple'){
+    return ['packaging','materials','equipment','anchor'].map(t=>({
+      label:(t==='anchor'?'Anchor fabs':TLABEL[t]),
+      items:vis.filter(e=>e.type===t).sort((a,b)=>cap(b)-cap(a))})).filter(g=>g.items.length);
+  }
+  if(sortMode==='capex'){
+    return [{label:'Anchor fabs',items:vis.filter(e=>e.type==='anchor').sort((a,b)=>cap(b)-cap(a))},
+            {label:'Suppliers & ecosystem',items:vis.filter(e=>e.type!=='anchor').sort((a,b)=>cap(b)-cap(a))}]
+           .filter(g=>g.items.length);
+  }
+  const yrs=[...new Set(vis.map(yr))].sort((a,b)=>chronoDir*(b-a));
+  return yrs.map(y=>({label:String(y),
+    items:vis.filter(e=>yr(e)===y).sort((a,b)=>chronoDir*(b.date.localeCompare(a.date)))}));
+}
+
+const SORTCAP={
+  chrono:()=>'sorted: '+(chronoDir>0?'newest first':'oldest first'),
+  capex:()=>'sorted: anchor fabs by capital investment',
+  ripple:()=>'sorted: ripple grouped by industry',
+  states:()=>'sorted: WG state priority order'
+};
+
+// EVENTS is the built-in seed. When hosted online, the page prefers a live projects.json
+// (maintained by the auto-update job); offline / on file:// it falls back to this seed.
+let DATA=EVENTS.filter(e=>e.type!=='skip');
+
+const map=L.map('map',{zoomControl:true,attributionControl:true,minZoom:3,maxZoom:9})
+  .setView([39.0,-95.5],4.4);
+const tileOpts={attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19};
+const tileDark =L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',tileOpts);
+const tileLight=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',tileOpts);
+tileDark.addTo(map);
+
+// State contour palettes for each theme (gold on dark, WG teal-green on light).
+const goldBase ={color:'#d8a73a',weight:1,opacity:0.5,fillColor:'#d8a73a',fillOpacity:0.025};
+const goldHover={color:'#ffd86b',weight:2.4,opacity:0.95,fillColor:'#ffcf5c',fillOpacity:0.16};
+const goldSel  ={color:'#ffd86b',weight:3,opacity:1,fillColor:'#ffcf5c',fillOpacity:0.28};
+const tealBase ={color:'#0f8a7e',weight:1,opacity:0.6,fillColor:'#0f8a7e',fillOpacity:0.04};
+const tealHover={color:'#13b3a3',weight:2.4,opacity:1,fillColor:'#13b3a3',fillOpacity:0.16};
+const tealSel  ={color:'#0c6f64',weight:3,opacity:1,fillColor:'#13b3a3',fillOpacity:0.3};
+function applyTheme(light){
+  document.body.classList.toggle('light',light);
+  if(light){ map.removeLayer(tileDark); tileLight.addTo(map);
+    Object.assign(stateBase,tealBase); Object.assign(stateHover,tealHover); Object.assign(stateSel,tealSel); }
+  else { map.removeLayer(tileLight); tileDark.addTo(map);
+    Object.assign(stateBase,goldBase); Object.assign(stateHover,goldHover); Object.assign(stateSel,goldSel); }
+  if(statesLayer) refreshStateStyles();
+  const b=document.getElementById('themeBtn'); if(b) b.textContent = light?'◐ DARK':'◐ LIGHT';
+  try{ localStorage.setItem('wg-theme', light?'light':'dark'); }catch(e){}
+}
+
+// ---- Golden state contours with hover highlight ----
+const stateBase ={color:'#d8a73a',weight:1,opacity:0.5,fillColor:'#d8a73a',fillOpacity:0.025,className:'state-poly'};
+const stateHover={color:'#ffd86b',weight:2.4,opacity:0.95,fillColor:'#ffcf5c',fillOpacity:0.16};
+let statesLayer=null;
+fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
+  .then(r=>r.json()).then(geo=>{
+    statesLayer=L.geoJSON(geo,{
+      style:()=>stateBase,
+      onEachFeature:(f,lyr)=>{
+        const ab=NAME2ABBR[f.properties.name];
+        if(ab) statesByAbbr[ab]=lyr;
+        const hasData=DATA.some(e=>e.st===ab);
+        lyr.bindTooltip(f.properties.name+(hasData?' — click to filter':''),
+          {sticky:true,className:'map-tip',direction:'top',opacity:1});
+        lyr.on('mouseover',()=>lyr.setStyle(stateHover));
+        lyr.on('mouseout',()=>lyr.setStyle(ab&&selectedStates.has(ab)?stateSel:stateBase));
+        lyr.on('click',()=>{ if(ab && hasData) toggleState(ab); });
+      }
+    }).addTo(map);
+    statesLayer.bringToBack();   // keep contours under the markers, above the tiles
+  }).catch(()=>{ /* offline: map still works without contours */ });
+
+const layer=L.layerGroup().addTo(map);
+const markers={};                       // key -> {e, marker}; built once, faded on render
+function keyOf(e){return e.co+'|'+e.site;}
+function yr(e){return parseInt(e.date.slice(0,4),10);}
+function rad(c){const v=c||1.2;return Math.max(6,Math.min(34,6+Math.sqrt(v)*2.6));}
+function buildMarkers(){
+  DATA.forEach(e=>{
+    const m=L.circleMarker([e.lat,e.lng],{
+      radius:rad(e.capex), color:e.delayed?'#ff5d5d':COLORS[e.type],
+      weight:e.delayed?2.5:1.5, fillColor:COLORS[e.type], fillOpacity:0.55, opacity:0.95,
+      className:'pin'
+    }).bindPopup(popupHTML(e),{maxWidth:310})
+      .bindTooltip(e.co+' · '+e.st,{className:'map-tip',direction:'top',offset:[0,-3],opacity:1});
+    m.addTo(layer);
+    markers[keyOf(e)]={e,marker:m};
+  });
+}
+
+function passesFilters(e,ignoreStates){
+  if(!active[e.type]) return false;
+  if(!ignoreStates && selectedStates.size && !selectedStates.has(e.st)) return false;
+  if(excludeDelayed && e.delayed) return false;
+  if(yr(e)>year) return false;
+  if(query){const q=query.toLowerCase();
+    if(!(e.co+' '+e.site+' '+e.city+' '+e.st).toLowerCase().includes(q)) return false;}
+  return true;
+}
+function visible(){ return DATA.filter(e=>passesFilters(e,false)); }      // feed + KPIs (state-filtered)
+function mapVisible(){ return DATA.filter(e=>passesFilters(e,true)); }    // markers ignore the state filter
+
+function srcLinks(e){
+  return (e.src||[]).map((u,i)=>`<a href="${u}" target="_blank" rel="noopener">source ${i+1} ↗</a>`).join('');
+}
+function figLine(e){
+  const p=[];
+  if(e.capex) p.push(`$${e.capex}B private`);
+  if(e.chips) p.push(`$${e.chips}B CHIPS`);
+  if(e.sf) p.push(e.sf);
+  return p.join(' · ')||'undisclosed';
+}
+function popupHTML(e){
+  return `<div class="pop-co">${e.co} — ${e.site}</div>
+    <div class="pop-loc">${e.city}, ${e.st} · ${e.date}${e.delayed?' · ⚠ DELAYED':''}</div>
+    <div class="pop-fig">${figLine(e)} · ${TLABEL[e.type]}</div>
+    <div>${e.sum}</div>
+    <div class="pop-cre"><b>CRE read:</b> ${e.cre}</div>
+    <div class="pop-src">${srcLinks(e)}</div>
+    ${assocHTML(e)}`;
+}
+function assocHTML(e){
+  const list=assocFor(e);
+  if(!list||!list.length) return '';
+  return `<div class="pop-assoc"><div class="pa-h">Associated companies</div>`+
+    list.map(a=>`<div class="pa-row">
+        <span class="pa-cat pa-${a.cat}">${a.cat}</span><span class="pa-name"><a href="${a.url}" target="_blank" rel="noopener">${a.name} ↗</a></span>
+        <div class="pa-note">${a.note}</div></div>`).join('')+
+    `</div>`;
+}
+
+function render(){
+  const vis=visible();
+  const mapSet=new Set(mapVisible().map(keyOf));   // markers shown regardless of state selection
+  const stateFilterOn=selectedStates.size>0;
+  for(const k in markers){
+    const el=markers[k].marker.getElement();
+    if(!el) continue;
+    const onMap=mapSet.has(k);
+    el.classList.toggle('hidden', !onMap);         // fade in/out via CSS
+    el.classList.toggle('dim', onMap && stateFilterOn && !selectedStates.has(markers[k].e.st));
+  }
+
+  const capex=vis.reduce((s,e)=>s+(e.capex||0),0);
+  const chips=vis.reduce((s,e)=>s+(e.chips||0),0);
+  document.getElementById('kpiCapex').innerHTML=Math.round(capex)+'<small>&nbsp;/&nbsp;'+chips.toFixed(0)+'&nbsp;$B</small>';
+  document.getElementById('kpiProjects').textContent=vis.length;
+  document.getElementById('kpiAnchor').textContent=vis.filter(e=>e.type==='anchor').length;
+  document.getElementById('kpiRipple').textContent=vis.filter(e=>e.type!=='anchor').length;
+  document.getElementById('kpiStates').textContent=new Set(vis.map(e=>e.st)).size;
+  document.getElementById('sortcap').textContent=SORTCAP[sortMode]();
+
+  const feed=document.getElementById('feed'); feed.innerHTML='';
+  groupsFor(vis).forEach(g=>{
+    const h=document.createElement('div'); h.className='grp';
+    h.innerHTML=`${g.label}<span class="cnt">${g.items.length}</span>`;
+    feed.appendChild(h);
+    g.items.forEach(e=>feed.appendChild(makeCard(e)));
+  });
+  document.getElementById('feedcount').textContent=vis.length+' shown';
+}
+
+function makeCard(e){
+  const k=keyOf(e), sel=selectedProjects.has(k);
+  const c=document.createElement('div'); c.className='card'+(sel?' selected':'');
+  c.innerHTML=`<input type="checkbox" class="cbx" ${sel?'checked':''} title="Select for export">
+    <div class="body">
+      <div class="top"><span class="co">${e.co}</span><span class="date">${e.date}</span></div>
+      <div class="loc"><span class="dot" style="background:${COLORS[e.type]}"></span>${e.site} · ${e.city}, ${e.st}</div>
+      <div class="sum">${e.sum}</div>
+      <div class="meta">
+        ${e.capex?`<span class="badge capex">$${e.capex}B private</span>`:''}
+        ${e.chips?`<span class="badge chips">$${e.chips}B CHIPS</span>`:''}
+        <span class="badge">${TLABEL[e.type]}</span>
+        ${assocFor(e).length?'<span class="badge cre">'+assocFor(e).length+' assoc.</span>':''}
+        ${e.delayed?'<span class="badge delayed">DELAYED</span>':''}
+      </div>
+    </div>`;
+  const cb=c.querySelector('.cbx');
+  cb.onclick=ev=>ev.stopPropagation();
+  cb.onchange=()=>toggleProject(k,c);
+  c.querySelector('.body').onclick=()=>{map.flyTo([e.lat,e.lng],6,{duration:.9});
+    const mk=markers[k]; if(mk) setTimeout(()=>mk.marker.openPopup(),720);};
+  return c;
+}
+
+// ---- State multi-select (driven by clicking states on the map) ----
+function refreshStateStyles(){
+  for(const ab in statesByAbbr) statesByAbbr[ab].setStyle(selectedStates.has(ab)?stateSel:stateBase);
+}
+function renderStateBar(){
+  const bar=document.getElementById('statebar');
+  if(!selectedStates.size){bar.style.display='none';bar.innerHTML='';return;}
+  bar.style.display='flex';
+  bar.innerHTML='<span class="sbl">Filtering:</span>'+
+    [...selectedStates].map(ab=>`<span class="schip" data-st="${ab}">${STATE_NAME[ab]||ab} ✕</span>`).join('')+
+    '<span class="schip clr" id="clrStates">CLEAR ALL</span>';
+  bar.querySelectorAll('.schip[data-st]').forEach(c=>c.onclick=()=>toggleState(c.dataset.st));
+  document.getElementById('clrStates').onclick=clearStates;
+}
+function toggleState(ab){
+  if(selectedStates.has(ab)) selectedStates.delete(ab); else selectedStates.add(ab);
+  refreshStateStyles(); renderStateBar(); render();
+}
+function clearStates(){ selectedStates.clear(); refreshStateStyles(); renderStateBar(); render(); }
+
+// ---- Project selection + Excel export ----
+let selectedProjects=new Set();
+function toggleProject(k,cardEl){
+  if(selectedProjects.has(k)) selectedProjects.delete(k); else selectedProjects.add(k);
+  if(cardEl) cardEl.classList.toggle('selected', selectedProjects.has(k));
+  updateExportLabel();
+}
+function selectAllVisible(){ visible().forEach(e=>selectedProjects.add(keyOf(e))); updateExportLabel(); render(); }
+function clearProjects(){ selectedProjects.clear(); updateExportLabel(); render(); }
+function updateExportLabel(){
+  const n=selectedProjects.size;
+  document.getElementById('exportBtn').textContent = n ? `⬇ EXPORT EXCEL (${n})` : '⬇ EXPORT EXCEL';
+}
+function styleHeader(ws,ncols){
+  const hr=ws.getRow(1);
+  hr.font={bold:true,color:{argb:'FFFFFFFF'}};
+  hr.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF103049'}};
+  hr.alignment={vertical:'middle'};
+  hr.height=20;
+  ws.views=[{state:'frozen',ySplit:1}];
+  ws.autoFilter={from:{row:1,column:1},to:{row:1,column:ncols}};
+}
+async function exportExcel(){
+  if(typeof ExcelJS==='undefined'){
+    alert('Excel export needs an internet connection (the Excel library did not load). Please retry online.');return;}
+  const vis=visible();
+  const chosen = selectedProjects.size ? vis.filter(e=>selectedProjects.has(keyOf(e))) : vis;
+  if(!chosen.length){alert('Nothing to export — adjust filters or tick some projects.');return;}
+
+  const wb=new ExcelJS.Workbook();
+  wb.creator='WG Reshoring Monitor';
+  const ws=wb.addWorksheet('Projects');
+  ws.columns=[
+    {header:'Company',key:'co',width:20},{header:'Project / Site',key:'site',width:30},
+    {header:'City',key:'city',width:16},{header:'State',key:'st',width:8},
+    {header:'Facility type',key:'type',width:18},{header:'Footprint (documented)',key:'sf',width:36},
+    {header:'Private capex ($B)',key:'capex',width:16},{header:'CHIPS ($B)',key:'chips',width:12},
+    {header:'Milestone',key:'date',width:11},{header:'Status',key:'status',width:11},
+    {header:'Summary',key:'sum',width:70},{header:'CRE read',key:'cre',width:55},
+    {header:'Source',key:'src',width:60}
+  ];
+  chosen.forEach(e=>{
+    const r=ws.addRow({co:e.co,site:e.site,city:e.city,st:e.st,type:TLABEL[e.type],sf:e.sf||'',
+      capex:e.capex??'',chips:e.chips??'',date:e.date,status:e.delayed?'Delayed':'Active',
+      sum:e.sum,cre:e.cre,src:(e.src||[]).join('  |  ')});
+    if(e.src&&e.src[0]){const c=r.getCell('src');
+      c.value={text:(e.src||[]).join('  |  '),hyperlink:e.src[0]};
+      c.font={color:{argb:'FF1565A6'},underline:true};}
+  });
+  styleHeader(ws,13);
+  ws.eachRow((r,i)=>{ if(i>1) r.alignment={vertical:'top',wrapText:true}; });
+
+  const bts=wb.addWorksheet('Associated Companies');
+  bts.columns=[{header:'Company',key:'name',width:26},{header:'Category',key:'cat',width:14},
+    {header:'Tied to anchor(s)',key:'anchors',width:34},{header:'What they supply / footprint',key:'note',width:78},
+    {header:'Website',key:'url',width:40}];
+  const agg={};
+  chosen.forEach(e=>assocFor(e).forEach(a=>{
+    if(!agg[a.name]) agg[a.name]={cat:a.cat,anchors:new Set(),note:a.note,url:a.url||''};
+    agg[a.name].anchors.add(e.co+' ('+e.st+')');
+  }));
+  Object.keys(agg).sort().forEach(n=>{
+    const v=agg[n];
+    const r=bts.addRow({name:n,cat:v.cat,anchors:[...v.anchors].join(', '),note:v.note,url:v.url});
+    if(v.url){
+      const nc=r.getCell('name'); nc.value={text:n,hyperlink:v.url}; nc.font={color:{argb:'FF1565A6'},underline:true};
+      const uc=r.getCell('url'); uc.value={text:v.url,hyperlink:v.url}; uc.font={color:{argb:'FF1565A6'},underline:true};
+    }
+  });
+  styleHeader(bts,5);
+  bts.eachRow((r,i)=>{ if(i>1) r.alignment={vertical:'top',wrapText:true}; });
+
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='WG_Reshoring_Monitor_'+new Date().toISOString().slice(0,10)+'.xlsx';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+// Clickable ribbon: each tile sets a feed sort. Clicking 'Projects' again flips direction.
+document.querySelectorAll('.kpi.sortable').forEach(k=>{
+  k.onclick=()=>{
+    const m=k.dataset.sort;
+    if(m==='chrono' && sortMode==='chrono') chronoDir*=-1; else sortMode=m;
+    document.querySelectorAll('.kpi.sortable').forEach(x=>x.classList.toggle('active',x.dataset.sort===sortMode));
+    render();
+  };
+});
+
+document.querySelectorAll('#typeChips .chip').forEach(ch=>{
+  ch.onclick=()=>{const t=ch.dataset.t;active[t]=!active[t];ch.classList.toggle('on',active[t]);render();};
+});
+document.getElementById('delaymode').onclick=function(){excludeDelayed=!excludeDelayed;
+  this.classList.toggle('on',excludeDelayed);
+  this.style.background=excludeDelayed?'var(--delayed)':'';this.style.color=excludeDelayed?'#fff':'';
+  this.style.borderColor=excludeDelayed?'var(--delayed)':'';render();};
+document.getElementById('search').oninput=e=>{query=e.target.value;render();};
+document.getElementById('selAll').onclick=selectAllVisible;
+document.getElementById('selClear').onclick=clearProjects;
+document.getElementById('exportBtn').onclick=exportExcel;
+document.getElementById('themeBtn').onclick=()=>applyTheme(!document.body.classList.contains('light'));
+
+const slider=document.getElementById('slider');
+slider.oninput=e=>{year=parseInt(e.target.value,10);document.getElementById('yrLabel').textContent=year;render();};
+let playing=null;
+document.getElementById('play').onclick=function(){
+  if(playing){clearInterval(playing);playing=null;this.textContent='▶ PLAY';return;}
+  this.textContent='❚❚ STOP'; year=2021;slider.value=2021;document.getElementById('yrLabel').textContent=2021;render();
+  playing=setInterval(()=>{
+    if(year>=2026){clearInterval(playing);playing=null;this.textContent='▶ PLAY';return;}
+    year++;slider.value=year;document.getElementById('yrLabel').textContent=year;render();
+  },1200);
+};
+
+function downloadData(){
+  const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='projects.json'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+async function boot(){
+  try{
+    const r=await fetch('projects.json',{cache:'no-store'});
+    if(r.ok){ const j=await r.json(); if(Array.isArray(j)&&j.length) DATA=j.filter(e=>e.type!=='skip'); }
+  }catch(e){ /* offline or file:// — use the built-in seed */ }
+  document.querySelector('.kpi.sortable[data-sort="chrono"]').classList.add('active');
+  buildMarkers();
+  renderStateBar();
+  updateExportLabel();
+  const db=document.getElementById('dataBtn'); if(db) db.onclick=downloadData;
+  let savedTheme='dark'; try{ savedTheme=localStorage.getItem('wg-theme')||'dark'; }catch(e){}
+  applyTheme(savedTheme==='light');
+  render();
+}
+boot();
+</script>
+</body>
+</html>
