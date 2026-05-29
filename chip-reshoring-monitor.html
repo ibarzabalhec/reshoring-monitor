@@ -881,7 +881,13 @@ function downloadData(){
 async function boot(){
   try{
     const r=await fetch('projects.json',{cache:'no-store'});
-    if(r.ok){ const j=await r.json(); if(Array.isArray(j)&&j.length) DATA=j.filter(e=>e.type!=='skip'); }
+    if(r.ok){ const j=await r.json(); if(Array.isArray(j)&&j.length){
+      // Merge the live feed ONTO the built-in seed (by company|site), so updates and
+      // new finds appear while the seed always provides the base set.
+      const m=new Map(DATA.map(e=>[e.co+'|'+e.site,e]));
+      j.filter(e=>e&&e.type!=='skip').forEach(e=>m.set(e.co+'|'+e.site,e));
+      DATA=[...m.values()];
+    } }
   }catch(e){ /* offline or file:// — use the built-in seed */ }
   document.querySelector('.kpi.sortable[data-sort="chrono"]').classList.add('active');
   buildMarkers();
