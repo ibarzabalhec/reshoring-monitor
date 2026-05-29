@@ -44,10 +44,13 @@
   body.light .leaflet-tooltip.map-tip{background:rgba(255,255,255,.97);color:var(--ix);border-color:var(--accent);box-shadow:0 2px 10px rgba(0,0,0,.18);}
   body.light .pin{filter:drop-shadow(0 0 1.5px rgba(0,0,0,.3));}
   body.light .badge.chips{color:#1c7a48;}
-  #kpis{display:flex;gap:1px;background:var(--line);border-bottom:1px solid var(--line);}
-  .kpi{flex:1;background:var(--panel);padding:9px 16px;}
-  .kpi .v{font-family:var(--mono);font-size:23px;color:var(--ix);font-weight:600;}
-  .kpi .l{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+  #kpis{display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border-bottom:1px solid var(--line);}
+  .kpi{flex:1 1 130px;min-width:130px;background:var(--panel);padding:10px 16px;}
+  .kpi .v{font-family:var(--mono);font-size:22px;color:var(--ix);font-weight:600;line-height:1.1;}
+  .kpi .l{font-size:12px;color:var(--dim);text-transform:none;letter-spacing:.01em;margin-top:4px;line-height:1.25;}
+  .kpi.money{border-top:2px solid #2c4a63;}
+  .kpi.money:nth-child(2){border-top-color:#1f4a30;}
+  .kpi.money:nth-child(3){border-top-color:#5a4a1e;}
   .kpi.sortable{cursor:pointer;position:relative;transition:background .12s;}
   .kpi.sortable:hover{background:var(--panel2);}
   .kpi.sortable::after{content:"⇅";position:absolute;top:8px;right:12px;font-size:10px;color:#3a4b5e;}
@@ -150,6 +153,8 @@
   .pop-co{font-weight:600;color:var(--ix);font-size:13px;}
   .pop-loc{font-family:var(--mono);font-size:10.5px;color:var(--accent);margin:2px 0 6px;}
   .pop-fig{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-bottom:6px;}
+  .pop-pub{font-size:11.5px;color:#9fd9c0;margin-bottom:6px;line-height:1.4;}
+  .pop-pub a{color:var(--anchor);}
   .pop-cre{margin-top:7px;padding-top:7px;border-top:1px solid var(--line);color:var(--txt);font-size:11px;}
   .pop-cre b{color:var(--accent);}
   .pop-src{margin-top:8px;padding-top:6px;border-top:1px solid var(--line);}
@@ -177,11 +182,13 @@
   </header>
 
   <div id="kpis">
-    <div class="kpi"><div class="v" id="kpiCapex">—</div><div class="l">Private / CHIPS capex</div></div>
-    <div class="kpi sortable" data-sort="chrono"><div class="v" id="kpiProjects">—</div><div class="l">Projects · sort by date</div></div>
-    <div class="kpi sortable" data-sort="capex"><div class="v" id="kpiAnchor">—</div><div class="l">Anchor fabs · by capital</div></div>
-    <div class="kpi sortable" data-sort="ripple"><div class="v" id="kpiRipple">—</div><div class="l">Ripple · by industry</div></div>
-    <div class="kpi sortable" data-sort="states"><div class="v" id="kpiStates">—</div><div class="l">States · WG priority</div></div>
+    <div class="kpi money"><div class="v" id="kpiPrivate">—</div><div class="l">Private investment</div></div>
+    <div class="kpi money"><div class="v" id="kpiChips">—</div><div class="l">Federal CHIPS grants</div></div>
+    <div class="kpi money"><div class="v" id="kpiPublic">—</div><div class="l">State / local + infrastructure</div></div>
+    <div class="kpi sortable" data-sort="chrono"><div class="v" id="kpiProjects">—</div><div class="l">Projects — click to sort by date</div></div>
+    <div class="kpi sortable" data-sort="capex"><div class="v" id="kpiAnchor">—</div><div class="l">Anchor fabs — sort by capital</div></div>
+    <div class="kpi sortable" data-sort="ripple"><div class="v" id="kpiRipple">—</div><div class="l">Supplier sites — sort by industry</div></div>
+    <div class="kpi sortable" data-sort="states"><div class="v" id="kpiStates">—</div><div class="l">States — sort by WG priority</div></div>
   </div>
 
   <div id="main">
@@ -207,9 +214,10 @@
       <div id="feedhead"><span id="sortcap">sorted: newest first</span><span id="feedcount">—</span></div>
       <div id="feed"></div>
       <div id="disclaimer">
-        Seeded set (~40 projects). Figures: private investment is the company-stated total
-        (often multi-phase, multi-year); CHIPS is the federal award (finalized or proposed). Sourced from
-        company filings/press, Commerce/NIST, and the Manufacturing Dive CHIPS tracker. Not investment advice.
+        Three capital figures: <b>Private</b> = company-stated investment (often multi-phase, multi-year);
+        <b>Federal CHIPS</b> = the federal grant, counted once per company award; <b>State / local + infrastructure</b> =
+        documented state and local incentives plus public infrastructure, shown only where sourced (blank otherwise).
+        Sourced from company filings/press, Commerce/NIST, state/local announcements, and the Manufacturing Dive CHIPS tracker. Not investment advice.
         <a id="dataBtn" style="color:var(--accent);cursor:pointer;text-decoration:underline;">Download data file</a>
       </div>
     </div>
@@ -242,12 +250,14 @@ const TRK="https://www.manufacturingdive.com/news/chips-and-science-act-tracker-
 const EVENTS = [
   {co:"Micron", site:"White Pine megafab (up to 4 fabs)", city:"Clay", st:"NY", lat:43.183, lng:-76.176,
    type:"anchor", capex:100, chips:6.1, date:"2026-01", delayed:false, sf:"1,400-acre White Pine Commerce Park",
+   pub:5.5, pubNote:"New York Green CHIPS incentives up to $5.5B over the life of the project", pubSrc:"https://www.esd.ny.gov/micron",
    sum:"Broke ground Jan 16, 2026 in Onondaga County. Up to four leading-edge memory fabs; largest private investment in NY history; part of Micron's ~$200B U.S. plan.",
    cre:"Long build horizon. Syracuse-area industrial land and contractor demand lead the fab by several years.",
    src:["https://www.constructiondive.com/news/micron-break-ground-new-york-semiconductor-fab/809171/","https://www.governor.ny.gov/news/promise-progress-governor-hochul-celebrates-groundbreaking-microns-semiconductor-manufacturing"]},
 
   {co:"TSMC", site:"Arizona gigafab (6 fabs)", city:"Phoenix", st:"AZ", lat:33.728, lng:-112.105,
    type:"anchor", capex:165, chips:6.6, date:"2026-04", delayed:false, sf:"~1,100-acre campus (+~900 acres of expansion land)",
+   pub:0.2, pubNote:"Phoenix ~$200M site infrastructure (roads, sewers), plus state road and water improvements", pubSrc:"https://www.taipeitimes.com/News/biz/archives/2020/11/20/2003747217",
    sum:"Fab 2 construction completed Apr 2026; 3nm equipment install for the next fab is running ahead of schedule with production targeted 2H2027. Total U.S. commitment $165B.",
    cre:"Densest, most mature U.S. cluster. Supplier, packaging and gas demand is active in North Phoenix / Peoria now, not later.",
    src:["https://pr.tsmc.com/english/news/3210","https://www.tomshardware.com/tech-industry/semiconductors/tsmc-brings-its-most-advanced-chipmaking-node-to-the-us-yet-to-begin-equipment-installation-for-3mn-months-ahead-of-schedule-arizona-fab-slated-for-production-in-2027"]},
@@ -260,6 +270,7 @@ const EVENTS = [
 
   {co:"Samsung", site:"Taylor campus", city:"Taylor", st:"TX", lat:30.570, lng:-97.409,
    type:"anchor", capex:44, chips:4.7, date:"2025-09", delayed:false, sf:"~1,200-acre campus (annexed for the site)",
+   pub:1.0, pubNote:"~$981M state/local incentives incl. a 30-year Taylor property-tax abatement, plus a $250M state fund grant", pubSrc:"https://www.commercialsearch.com/news/texas-officials-woo-17b-samsung-chip-plant-with-tax-incentives/",
    sum:"Full construction resumed after a 2024 pause; 2026 operational target. A Tesla AI6 foundry deal (~$16.5B) supplied the anchor customer the site had lacked.",
    cre:"Core Texas Triangle (Williamson County). The Tesla offtake reduces ramp risk that had stalled the project.",
    src:["https://www.tomshardware.com/tech-industry/semiconductors/samsungs-taylor-texas-fab-could-herald-a-breakthrough-for-the-chipmaker-company-plans-2026-risk-production-new-production-flows-pellicles-for-euv-patterning-as-site-targets-50-000-wspm",TRK]},
@@ -271,7 +282,7 @@ const EVENTS = [
    src:["https://www.governor.ny.gov/news/governor-hochul-celebrates-globalfoundries-116-billion-investment-expand-semiconductor",TRK]},
 
   {co:"GlobalFoundries", site:"Essex Junction modernization", city:"Essex Junction", st:"VT", lat:44.490, lng:-73.110,
-   type:"anchor", capex:4, chips:1.5, date:"2025-06", delayed:false,
+   type:"anchor", capex:4, chips:null, date:"2025-06", delayed:false,
    sum:"Modernization and added capacity for specialty wireless and optical chips, part of GF's $16B NY+VT program.",
    cre:"A New England specialty plant — niche end-markets, outside WG's footprint; shown for the national picture.",
    src:["https://vtdigger.org/2025/06/04/globalfoundries-to-invest-16b-in-chip-manufacturing-in-vermont-and-new-york/",TRK]},
@@ -284,6 +295,7 @@ const EVENTS = [
 
   {co:"Intel", site:"Ohio One (Mod 1/2)", city:"New Albany", st:"OH", lat:40.082, lng:-82.808,
    type:"anchor", capex:28, chips:7.9, date:"2025-02", delayed:true, sf:"~1,000-acre mega-site (room for up to 8 fabs)",
+   pub:2.0, pubNote:"Ohio package $2B+ (state incentives, JobsOhio grants, 30-year New Albany property-tax abatement)", pubSrc:"https://ohiocapitaljournal.com/2022/06/02/hundreds-of-millions-more-in-incentives-offered-to-intel/",
    sum:"~$28B committed against a >$100B long-term vision. Construction slowed: first fab now 2030, high-volume 2031. CHIPS award (~$7.9B) restructured into a U.S. 9.9% equity stake in Aug 2025.",
    cre:"Demand deferred roughly 4-5 years. Watchlist, not a near-term land thesis.",
    src:["https://www.manufacturingdive.com/news/intel-delays-new-albany-ohio-chip-manufacturing-project-again-2030-2031/741321/","https://www.cnbc.com/2025/08/19/trump-administration-weighs-10percent-stake-in-intel-via-chip-act-grants.html"]},
@@ -314,12 +326,13 @@ const EVENTS = [
 
   {co:"Texas Instruments", site:"Sherman (SM1-SM4)", city:"Sherman", st:"TX", lat:33.635, lng:-96.625,
    type:"anchor", capex:30, chips:1.6, date:"2025-06", delayed:false, sf:"~1,200-acre site (four 300mm fabs planned)",
+   pub:2.36, pubNote:"~$2.36B local abatements/rebates over 35 years (city, county, school district, college)", pubSrc:"https://goodjobsfirst.org/texas-instruments-drowns-in-tax-breaks-while-north-texas-cities-left-high-and-dry/",
    sum:"Up to four 300mm fabs; early production phases began 2025. Part of TI's $60B / seven-fab U.S. program (TX + UT). Analog and embedded essential chips.",
    cre:"North Texas / Grayson County. Foundational-node fabs run long and steady — durable supplier demand, less AI-cycle exposure.",
    src:["https://www.semi.org/en/semi-press-release/eighteen-new-semiconductor-fabs-to-start-construction-in-2025-semi-reports",TRK]},
 
   {co:"Texas Instruments", site:"Lehi (LFAB2)", city:"Lehi", st:"UT", lat:40.391, lng:-111.851,
-   type:"anchor", capex:11, chips:1.6, date:"2024-12", delayed:false,
+   type:"anchor", capex:11, chips:null, date:"2024-12", delayed:false,
    sum:"Second 300mm fab adjacent to the existing Lehi site, within TI's $60B program.",
    cre:"Silicon Slopes. Establishes a secondary analog cluster outside Texas.",
    src:["https://www.blackridgeresearch.com/blog/latest-list-of-largest-new-semiconductor-fabs-foundries-in-the-us-united-states",TRK]},
@@ -331,13 +344,13 @@ const EVENTS = [
    src:["https://news.skhynix.com/sk-hynix-signs-investment-agreement-of-advanced-chip-packaging-with-indiana/","https://www.nist.gov/chips/sk-hynix-indiana-west-lafayette"]},
 
   {co:"Micron", site:"Boise leading-edge fabs", city:"Boise", st:"ID", lat:43.527, lng:-116.410,
-   type:"anchor", capex:25, chips:6.1, date:"2025-06", delayed:false,
+   type:"anchor", capex:25, chips:null, date:"2025-06", delayed:false,
    sum:"Two leading-edge high-volume memory fabs co-located with Micron HQ and R&D.",
    cre:"Treasure Valley. HQ + R&D + fab concentration; secondary to the NY megafab but real near-term construction.",
    src:["https://www.sec.gov/Archives/edgar/data/0000723125/000110465925058741/tm2517778d1_ex99-1.htm",TRK]},
 
   {co:"Samsung", site:"Austin (existing + uplift)", city:"Austin", st:"TX", lat:30.391, lng:-97.690,
-   type:"anchor", capex:17, chips:4.7, date:"2024-12", delayed:false,
+   type:"anchor", capex:17, chips:null, date:"2024-12", delayed:false,
    sum:"Existing Austin foundry anchoring the broader Austin-Taylor cluster; Texas plans span up to a dozen fabs across both sites over time.",
    cre:"Austin metro. With Taylor, forms a concentrated Texas Triangle demand zone.",
    src:["https://gov.texas.gov/news/post/governor-abbott-announces-texas-semiconductor-innovation-fund-grant-to-samsung-austin-semiconductor",TRK]},
@@ -379,7 +392,7 @@ const EVENTS = [
    src:["https://www.phcppros.com/articles/17786-us-semiconductor-building-boom-underway",TRK]},
 
   {co:"Wolfspeed", site:"Mohawk Valley SiC device fab", city:"Marcy", st:"NY", lat:43.17, lng:-75.27,
-   type:"anchor", capex:null, chips:0.75, date:"2024-10", delayed:false,
+   type:"anchor", capex:null, chips:null, date:"2024-10", delayed:false,
    sum:"A plant making power chips for electric vehicles in New York's Mohawk Valley, paired with the North Carolina materials plant.",
    cre:"A power-chip plant in upstate NY — modest scale, EV-driven, outside WG's markets.",
    src:[TRK,"https://www.phcppros.com/articles/17786-us-semiconductor-building-boom-underway"]},
@@ -397,7 +410,7 @@ const EVENTS = [
    src:[TRK,"https://www.commerce.gov/news/press-releases"]},
 
   {co:"Intel", site:"Ocotillo (Fab 52/62)", city:"Chandler", st:"AZ", lat:33.302, lng:-111.843,
-   type:"anchor", capex:20, chips:7.9, date:"2024-03", delayed:false,
+   type:"anchor", capex:20, chips:null, date:"2024-03", delayed:false,
    sum:"Two leading-edge fabs at the existing Ocotillo campus (part of Intel's multi-state CHIPS award covering AZ, NM, OH, OR).",
    cre:"Reinforces Greater Phoenix fab density alongside TSMC.",
    src:["https://www.gpec.org/industries-operations/industries-in-greater-phoenix/semiconductors/",TRK]},
@@ -665,6 +678,7 @@ function popupHTML(e){
   return `<div class="pop-co">${e.co} — ${e.site}</div>
     <div class="pop-loc">${e.city}, ${e.st} · ${e.date}${e.delayed?' · ⚠ DELAYED':''}</div>
     <div class="pop-fig">${figLine(e)} · ${TLABEL[e.type]}</div>
+    ${e.pub?`<div class="pop-pub"><b>Public support:</b> $${e.pub}B — ${e.pubNote} <a href="${e.pubSrc}" target="_blank" rel="noopener">↗</a></div>`:''}
     <div>${e.sum}</div>
     <div class="pop-cre"><b>CRE read:</b> ${e.cre}</div>
     <div class="pop-src">${srcLinks(e)}</div>
@@ -692,9 +706,13 @@ function render(){
     el.classList.toggle('dim', onMap && stateFilterOn && !selectedStates.has(markers[k].e.st));
   }
 
+  const fmt=n=>'$'+(n>=10?Math.round(n):n.toFixed(1))+'B';
   const capex=vis.reduce((s,e)=>s+(e.capex||0),0);
   const chips=vis.reduce((s,e)=>s+(e.chips||0),0);
-  document.getElementById('kpiCapex').innerHTML=Math.round(capex)+'<small>&nbsp;/&nbsp;'+chips.toFixed(0)+'&nbsp;$B</small>';
+  const pub=vis.reduce((s,e)=>s+(e.pub||0),0);
+  document.getElementById('kpiPrivate').textContent=fmt(capex);
+  document.getElementById('kpiChips').textContent=fmt(chips);
+  document.getElementById('kpiPublic').textContent=fmt(pub);
   document.getElementById('kpiProjects').textContent=vis.length;
   document.getElementById('kpiAnchor').textContent=vis.filter(e=>e.type==='anchor').length;
   document.getElementById('kpiRipple').textContent=vis.filter(e=>e.type!=='anchor').length;
@@ -791,20 +809,21 @@ async function exportExcel(){
     {header:'Company',key:'co',width:20},{header:'Project / Site',key:'site',width:30},
     {header:'City',key:'city',width:16},{header:'State',key:'st',width:8},
     {header:'Facility type',key:'type',width:18},{header:'Footprint (documented)',key:'sf',width:36},
-    {header:'Private capex ($B)',key:'capex',width:16},{header:'CHIPS ($B)',key:'chips',width:12},
+    {header:'Private capex ($B)',key:'capex',width:16},{header:'Federal CHIPS ($B)',key:'chips',width:14},
+    {header:'State/local + infra ($B)',key:'pub',width:18},{header:'Public support note',key:'pubNote',width:50},
     {header:'Milestone',key:'date',width:11},{header:'Status',key:'status',width:11},
     {header:'Summary',key:'sum',width:70},{header:'CRE read',key:'cre',width:55},
     {header:'Source',key:'src',width:60}
   ];
   chosen.forEach(e=>{
     const r=ws.addRow({co:e.co,site:e.site,city:e.city,st:e.st,type:TLABEL[e.type],sf:e.sf||'',
-      capex:e.capex??'',chips:e.chips??'',date:e.date,status:e.delayed?'Delayed':'Active',
+      capex:e.capex??'',chips:e.chips??'',pub:e.pub??'',pubNote:e.pubNote||'',date:e.date,status:e.delayed?'Delayed':'Active',
       sum:e.sum,cre:e.cre,src:(e.src||[]).join('  |  ')});
     if(e.src&&e.src[0]){const c=r.getCell('src');
       c.value={text:(e.src||[]).join('  |  '),hyperlink:e.src[0]};
       c.font={color:{argb:'FF1565A6'},underline:true};}
   });
-  styleHeader(ws,13);
+  styleHeader(ws,15);
   ws.eachRow((r,i)=>{ if(i>1) r.alignment={vertical:'top',wrapText:true}; });
 
   const bts=wb.addWorksheet('Associated Companies');
