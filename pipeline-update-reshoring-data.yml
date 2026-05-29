@@ -1,0 +1,53 @@
+# Place this at: .github/workflows/update-reshoring-data.yml
+# Weekly auto-update for the Semiconductor Reshoring Monitor.
+# The Claude API key lives ONLY in the repo secret ANTHROPIC_API_KEY — never in the site.
+
+name: Update reshoring data
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"      # Mondays 12:00 UTC (~7am Central). Adjust as needed.
+  workflow_dispatch: {}        # allows a manual run from the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install @anthropic-ai/sdk@^0.32.0
+
+      - name: Run weekly discovery sweep
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/update-projects.mjs
+
+      # ---- MODE A: commit changes directly (fully autonomous) ----
+      - name: Commit updated data
+        run: |
+          git config user.name  "reshoring-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add projects.json sweeps/ || true
+          git commit -m "Weekly reshoring sweep $(date -u +%Y-%m-%d)" || echo "No changes"
+          git push
+
+      # ---- MODE B: open a pull request for review (recommended) ----
+      # Comment out MODE A above and uncomment this to require human approval.
+      # - name: Open PR with proposed changes
+      #   uses: peter-evans/create-pull-request@v6
+      #   with:
+      #     commit-message: "Weekly reshoring sweep"
+      #     branch: auto/reshoring-sweep
+      #     title: "Weekly reshoring sweep — review before publish"
+      #     body: "Auto-generated update to projects.json. Review WG-market items before merging."
+
+      # If hosting on GitHub Pages with a Pages build step, add your deploy job here.
