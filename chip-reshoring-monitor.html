@@ -901,11 +901,21 @@ async function boot(){
   try{
     const r=await fetch('projects.json',{cache:'no-store'});
     if(r.ok){ const j=await r.json(); if(Array.isArray(j)&&j.length){
-      // Merge the live feed ONTO the built-in seed (by company|site), so updates and
-      // new finds appear while the seed always provides the base set.
-      const m=new Map(DATA.map(e=>[e.co+'|'+e.site,e]));
-      j.filter(e=>e&&e.type!=='skip').forEach(e=>m.set(e.co+'|'+e.site,e));
-      DATA=[...m.values()];
+      // Merge the live feed onto the built-in seed. Match by company+city (robust to the
+      // updater naming a project slightly differently); on a match, overlay only the fields
+      // the feed actually filled, so curated values (public support, footprint) are kept.
+      const nkey=e=>(((e.co||'').toLowerCase().replace(/\(.*?\)/g,'').trim().split(/[\s\/,]+/)[0])||'')+'|'+(e.city||'').toLowerCase().trim();
+      // Accept dollars OR billions: anything >=1000 is treated as raw dollars and scaled to $B.
+      const norm=v=>{v=Number(v); if(!isFinite(v))return null; return v>=1000?+(v/1e9).toFixed(3):v;};
+      const base=new Map(DATA.map(e=>[nkey(e),e]));
+      j.filter(e=>e&&e.type!=='skip').forEach(e=>{
+        const k=nkey(e), clean={};
+        for(const p in e){ const val=e[p]; if(val!==null&&val!==''&&val!==undefined) clean[p]=val; }
+        base.set(k, base.has(k)?Object.assign({},base.get(k),clean):e);
+      });
+      DATA=[...base.values()].map(e=>{ const c=Object.assign({},e);
+        ['capex','chips','pub'].forEach(f=>{ if(c[f]!=null) c[f]=norm(c[f]); });
+        return c; });
     } }
   }catch(e){ /* offline or file:// — use the built-in seed */ }
   document.querySelector('.kpi.sortable[data-sort="chrono"]').classList.add('active');
