@@ -151,6 +151,8 @@
     font-family:var(--mono);font-size:10.5px;padding:3px 7px;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.5);}
   .leaflet-tooltip.map-tip::before{border:none!important;}
   .pop-co{font-weight:600;color:var(--ix);font-size:13px;}
+  .pop-co a{color:var(--anchor);text-decoration:none;}
+  .pop-co a:hover{text-decoration:underline;}
   .pop-loc{font-family:var(--mono);font-size:10.5px;color:var(--accent);margin:2px 0 6px;}
   .pop-fig{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-bottom:6px;}
   .pop-pub{font-size:11.5px;color:#9fd9c0;margin-bottom:6px;line-height:1.4;}
@@ -472,6 +474,31 @@ const STATE_NAME={TX:'Texas',AZ:'Arizona',NC:'North Carolina',GA:'Georgia',UT:'U
   OH:'Ohio',VA:'Virginia',NY:'New York',VT:'Vermont',CA:'California',OR:'Oregon',NM:'New Mexico'};
 const NAME2ABBR=Object.fromEntries(Object.entries(STATE_NAME).map(([a,n])=>[n,a]));
 
+// Corporate site for the company conducting each project (keyed by company name).
+// Verified or established corporate domains; companies without a confirmed site are omitted (no link).
+const CO_URL={
+  'Micron':'https://www.micron.com',
+  'TSMC':'https://www.tsmc.com',
+  'Intel':'https://www.intel.com',
+  'Samsung':'https://semiconductor.samsung.com',
+  'Texas Instruments':'https://www.ti.com',
+  'GlobalFoundries':'https://gf.com',
+  'Coherent':'https://www.coherent.com',
+  'Coherent / Infinera':'https://www.coherent.com',
+  'Hemlock Semiconductor':'https://www.hscpoly.com',
+  'Edwards Vacuum':'https://www.edwardsvacuum.com',
+  'HP':'https://www.hp.com',
+  'SK Hynix':'https://www.skhynix.com',
+  'Bosch':'https://www.bosch.com',
+  'Amkor Technology':'https://www.amkor.com',
+  'Entegris':'https://www.entegris.com',
+  'Wolfspeed':'https://www.wolfspeed.com',
+  'Polar Semiconductor':'https://www.polarsemi.com',
+  'Linde':'https://www.linde.com',
+  'Wacker':'https://www.wacker.com',
+  'Tesla':'https://www.tesla.com'
+};
+
 // Associated companies = the suppliers/partners with heavy industrial-real-estate / build-to-suit
 // relevance that cluster around each anchor. Keyed by the anchor's company name.
 const ASSOC_BY_CO={
@@ -675,7 +702,8 @@ function figLine(e){
   return p.join(' · ')||'undisclosed';
 }
 function popupHTML(e){
-  return `<div class="pop-co">${e.co} — ${e.site}</div>
+  const coName = CO_URL[e.co] ? `<a href="${CO_URL[e.co]}" target="_blank" rel="noopener">${e.co} ↗</a>` : e.co;
+  return `<div class="pop-co">${coName} — ${e.site}</div>
     <div class="pop-loc">${e.city}, ${e.st} · ${e.date}${e.delayed?' · ⚠ DELAYED':''}</div>
     <div class="pop-fig">${figLine(e)} · ${TLABEL[e.type]}</div>
     ${e.pub?`<div class="pop-pub"><b>Public support:</b> $${e.pub}B — ${e.pubNote} <a href="${e.pubSrc}" target="_blank" rel="noopener">↗</a></div>`:''}
