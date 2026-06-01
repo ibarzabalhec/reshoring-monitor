@@ -1,45 +1,5 @@
 [
   {
-    "co": "SpaceX / Tesla / xAI / Intel (Terafab JV)",
-    "site": "Terafab — Grimes County site (Gibbons Creek)",
-    "city": "Anderson",
-    "st": "TX",
-    "lat": 30.4877,
-    "lng": -95.9841,
-    "type": "anchor",
-    "capex": 55,
-    "chips": null,
-    "date": "2026-05",
-    "delayed": false,
-    "sf": "",
-    "sum": "SpaceX filed a property-tax-abatement application with Grimes County on May 6, 2026 for a vertically integrated semiconductor and advanced-computing facility at the former Gibbons Creek site, ~90 miles northeast of Austin. Phase-1 investment is estimated at $55B, with total potential investment up to $119B across phases. Intel joined in April 2026.",
-    "cre": "Greenfield mega-campus on a large former industrial site in rural Grimes County — in WG's home state. If approved, one of the largest single industrial commitments in U.S. history, anchoring a new supplier corridor between Bryan-College Station and Houston.",
-    "src": [
-      "https://techcrunch.com/2026/05/06/spacex-may-spend-up-to-119-billion-on-terafab-chip-factory-in-texas/"
-    ],
-    "confidence": "high"
-  },
-  {
-    "co": "Tesla",
-    "site": "Advanced Technology Fabrication (prototype fab) — Gigafactory Texas",
-    "city": "Austin",
-    "st": "TX",
-    "lat": 30.2218,
-    "lng": -97.6078,
-    "type": "anchor",
-    "capex": 3,
-    "chips": null,
-    "date": "2026-05",
-    "delayed": false,
-    "sf": "",
-    "sum": "Tesla is building a ~$3B prototype semiconductor fab on its existing Gigafactory Texas campus in Austin, with active construction confirmed in May 2026. The pilot line tests chip-manufacturing ideas ahead of the full-scale Terafab; small-batch production of Tesla's AI5 chip is targeted for 2026.",
-    "cre": "An in-campus fab addition within Tesla's existing Austin footprint — in WG's home market. Drives demand for specialty construction, ultra-pure utilities, and process-chemical supply, plus ancillary supplier space near the campus.",
-    "src": [],
-    "confidence": "high",
-    "linkAudit": "2026-06-01",
-    "review": true
-  },
-  {
     "co": "Texas Instruments",
     "site": "Sherman Mega-Site — SM1 fab (first of four 300mm wafer fabs)",
     "city": "Sherman",
