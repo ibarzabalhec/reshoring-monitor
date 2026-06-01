@@ -35,8 +35,10 @@ const knownList = existing
   .join("\n");
 
 // ---- live URL validation: a source counts only if it actually loads ----
+const BLOCK_DOMAINS = ["wikipedia.org"];   // exclude user-editable wikis as sources
 async function urlOk(u) {
   if (typeof u !== "string" || !/^https?:\/\//i.test(u)) return false;
+  try { const h = new URL(u).hostname; if (BLOCK_DOMAINS.some(d => h === d || h.endsWith("." + d))) return false; } catch { return false; }
   const opts = { redirect: "follow", headers: { "User-Agent": "reshoring-monitor-linkcheck" } };
   if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) opts.signal = AbortSignal.timeout(9000);
   try {
@@ -62,6 +64,7 @@ RULES:
 - Sweep the five WG states first and in full, then national.
 - Never invent figures. Capex, CHIPS award, jobs, square footage, acreage, dates must come from a published source. If not documented, use null (numbers) or "" (strings).
 - Only cite URLs you actually opened during this search and confirmed load. Do not guess or reconstruct URLs. Prefer the article's canonical link.
+- Do not cite Wikipedia or other user-editable wikis. Use primary, government, or established news sources.
 - Prefer two independent sources.
 - Discovery over confirmation: actively surface projects NOT in the known list below.
 - capex, chips, and any public-incentive figure must be DOLLARS IN BILLIONS as plain numbers (40 means $40B; 1.61 means a $1.61B award). Never output raw dollars like 40000000000.
