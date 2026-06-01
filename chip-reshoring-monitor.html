@@ -58,7 +58,9 @@
   .kpi.active::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:var(--accent);}
   .kpi.active .l{color:var(--accent);}
   .kpi.active::after{color:var(--accent);}
-  #sortcap{font-family:var(--mono);font-size:9.5px;color:var(--accent);text-transform:none;letter-spacing:0;}
+  #sortcap{font-family:var(--mono);font-size:9.5px;color:var(--accent);text-transform:none;letter-spacing:0;cursor:pointer;}
+  #sortcap::after{content:" ⇅";opacity:.75;}
+  #sortcap:hover{text-decoration:underline;}
   .kpi .v small{font-size:12px;color:var(--dim);}
   #main{display:flex;flex:1;min-height:0;}
   #side{width:450px;min-width:450px;display:flex;flex-direction:column;
@@ -908,6 +910,12 @@ document.getElementById('delaymode').onclick=function(){excludeDelayed=!excludeD
   this.style.background=excludeDelayed?'var(--delayed)':'';this.style.color=excludeDelayed?'#fff':'';
   this.style.borderColor=excludeDelayed?'var(--delayed)':'';render();};
 document.getElementById('search').oninput=e=>{query=e.target.value;render();};
+// Clicking the sort caption flips chronological direction (newest <-> oldest)
+document.getElementById('sortcap').onclick=()=>{
+  if(sortMode==='chrono') chronoDir*=-1; else sortMode='chrono';
+  document.querySelectorAll('.kpi.sortable').forEach(x=>x.classList.toggle('active',x.dataset.sort===sortMode));
+  render();
+};
 document.getElementById('selAll').onclick=selectAllVisible;
 document.getElementById('selClear').onclick=clearProjects;
 document.getElementById('exportBtn').onclick=exportExcel;
