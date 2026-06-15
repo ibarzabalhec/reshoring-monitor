@@ -1,0 +1,73 @@
+[
+  {
+    "co": "Samsung Electronics",
+    "site": "Samsung Austin Semiconductor — Taylor Foundry Campus, Fab 1 equipment move-in complete; Fab 2 early regulatory review initiated",
+    "city": "Taylor",
+    "st": "TX",
+    "lat": 30.571,
+    "lng": -97.409,
+    "type": "anchor",
+    "capex": 44,
+    "chips": 6.4,
+    "date": "2026-04",
+    "delayed": false,
+    "sf": "",
+    "sum": "Samsung completed equipment move-in at its first 300mm logic fab in Taylor in April 2026 and has immediately begun early-stage regulatory review for a second fab on the same campus, targeting 2nm production. The 1,268-acre campus is now transitioning from construction to operational ramp. A second large fab building is entering pre-permit review.",
+    "cre": "~1,268-acre master-planned industrial campus now advancing from shell-complete to equipment-qualified status on Fab 1; Fab 2 pre-permit review creates near-term demand for additional heavy-industrial land, utility infrastructure, and specialized cleanroom construction subcontractors in Williamson County.",
+    "src": [
+      "https://manufacturingdigital.com/news/inside-samsung-electronics-taylor-texas-semiconductor-fab"
+    ],
+    "changeNote": "Milestone update to known project (2026-04 entry): Fab 1 equipment move-in ceremony completed April 2026; Fab 2 entered early regulatory review April 30, 2026 — neither event was captured in the prior known-list entry.",
+    "lastSeen": "2026-06-15",
+    "confidence": "low",
+    "review": true
+  },
+  {
+    "co": "SpaceX / Tesla / xAI / Intel (Terafab JV)",
+    "site": "Terafab — Grimes County site (Gibbons Creek), county filing documents $55B initial phase / $119B total potential capex",
+    "city": "Anderson",
+    "st": "TX",
+    "lat": 30.484,
+    "lng": -96.001,
+    "type": "anchor",
+    "capex": 55,
+    "chips": null,
+    "date": "2026-05",
+    "delayed": false,
+    "sf": "",
+    "sum": "A Grimes County filing published May 6, 2026 quantifies SpaceX's Terafab Grimes County project at $55B in initial-phase investment with a stated total potential of $119B, described as a multi-phase vertically integrated semiconductor manufacturing and advanced computing fabrication facility. This is the first published dollar figure specific to the Grimes County site, materially larger than the $25B figure associated with the Austin/Terafab announcement.",
+    "cre": "Proposed multi-phase heavy-industrial campus on a 22,000-acre reinvestment zone in rural Grimes County; if phased construction proceeds, demand for large-format industrial land, logistics infrastructure, contractor laydown yards, and workforce housing in the Bryan-College Station metro corridor will be substantial. Welcome Group's Texas franchise covers this region.",
+    "src": [
+      "https://techcrunch.com/2026/05/06/spacex-may-spend-up-to-119-billion-on-terafab-chip-factory-in-texas/",
+      "https://www.basenor.com/blogs/news/spacex-files-plans-for-55b-semiconductor-fab-in-texas"
+    ],
+    "changeNote": "Capex update to known project (Terafab Grimes County, 2026-06 entry): county filing dated May 6, 2026 documents $55B initial / $119B total capex range for the Grimes County site specifically — prior known-list entries cited only the $25B Terafab aggregate figure.",
+    "lastSeen": "2026-06-15",
+    "confidence": "high",
+    "review": false
+  },
+  {
+    "co": "Wolfspeed",
+    "site": "John Palmour Manufacturing Center for Silicon Carbide",
+    "city": "Siler City",
+    "st": "NC",
+    "lat": 35.724,
+    "lng": -79.459,
+    "type": "materials",
+    "capex": 5,
+    "chips": 0.75,
+    "date": "2026-04",
+    "delayed": false,
+    "sf": "2000000",
+    "sum": "Wolfspeed emerged from Chapter 11 bankruptcy on September 29, 2025 after cutting debt by ~70%, and the John Palmour Manufacturing Center in Siler City is now reported as operational. The company is post-restructuring and continuing to ramp its 2-million-sq-ft SiC wafer facility. The $750M CHIPS PMT had not been converted to a final award as of the bankruptcy filing, and its status post-restructuring remains unconfirmed in public sources.",
+    "cre": "2-million-sq-ft silicon-carbide wafer manufacturing plant on a 445-acre industrial campus in Chatham County is now in operational ramp phase post-bankruptcy restructuring. Ongoing ramp activity sustains demand for industrial services, utilities, and supplier facilities in the Research Triangle/Triad corridor — a market adjacent to Welcome Group's NC footprint.",
+    "src": [
+      "https://www.kavout.com/market-lens/has-wolfspeed-truly-turned-the-corner-after-bankruptcy",
+      "https://www.nist.gov/chips/wolfspeed-north-carolina-siler-city"
+    ],
+    "changeNote": "Status update to known project (2026-04 entry): Wolfspeed completed Chapter 11 reorganization and emerged from bankruptcy September 29, 2025; the Siler City John Palmour facility is now reported as operational. Debt reduced ~70%. CHIPS award final status post-restructuring not yet confirmed in sources reviewed.",
+    "lastSeen": "2026-06-15",
+    "confidence": "high",
+    "review": false
+  }
+]
