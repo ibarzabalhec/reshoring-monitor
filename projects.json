@@ -279,5 +279,80 @@
     "lastSeen": "2026-06-15",
     "confidence": "high",
     "review": false
+  },
+  {
+    "co": "Coherent Corp.",
+    "site": "Coherent InP Photonics Manufacturing Facility — Sherman Campus Expansion (6-inch Indium Phosphide Wafer Fab)",
+    "city": "Sherman",
+    "st": "TX",
+    "lat": 33.6357,
+    "lng": -96.6089,
+    "type": "anchor",
+    "capex": null,
+    "chips": 0.05,
+    "date": "2026-06",
+    "delayed": false,
+    "sf": "",
+    "sum": "Coherent broke ground June 16, 2026 on an expansion of its existing indium phosphide wafer fabrication facility in Sherman, TX. The project will double the manufacturing floor area and quadruple wafer production capacity, creating over 1,000 jobs (550+ direct). A CHIPS Act letter of intent for up to $50 million was signed with the U.S. Department of Commerce the same day; roughly $20 million in prior Texas Semiconductor Innovation Fund and Sherman EDC support also committed. NVIDIA participated in the groundbreaking ceremony and is a key customer for the optical networking components produced here.",
+    "cre": "Expansion of an existing industrial manufacturing campus in Sherman (Grayson County), TX — doubling cleanroom and fab production floor area. Drives demand for industrial outdoor storage, chemical-supply logistics yards, and workforce housing near the site. Sherman already hosts Texas Instruments' SM1 fab mega-site, making the corridor an established semiconductor industrial cluster with strong co-tenant leasing potential.",
+    "src": [
+      "https://www.nist.gov/news-events/news/2026/06/department-commerces-chips-program-announces-letter-intent-coherent-50",
+      "https://finance.yahoo.com/technology/ai/articles/coherent-announces-chips-letter-intent-130000290.html",
+      "https://www.kxii.com/2026/06/16/coherent-breaks-ground-sherman-expansion-with-nvidia-announces-50m-federal-funding/",
+      "https://www.coherent.com/news/press-releases/a-chip-letter-of-intent-for-50m-to-expand-world-leading-manufacturing-facility-for-ai-infrastructure",
+      "https://www.semiconductors.org/sia-applauds-chips-act-incentives-for-coherent/"
+    ],
+    "changeNote": "",
+    "lastSeen": "2026-06-22",
+    "confidence": "high",
+    "review": false
+  },
+  {
+    "co": "Samsung Electronics",
+    "site": "Samsung Austin Semiconductor — Taylor Foundry Campus, mass production timeline confirmed slipped to 2027; CHIPS award finalized at $4.745B on $37B total investment",
+    "city": "Taylor",
+    "st": "TX",
+    "lat": 30.571,
+    "lng": -97.4097,
+    "type": "anchor",
+    "capex": 37,
+    "chips": 4.745,
+    "date": "2026-06",
+    "delayed": true,
+    "sf": "",
+    "sum": "Samsung's VP of North American Foundry operations publicly confirmed at Samsung's SAFE Forum USA (May 28, 2026) and per Aju News/TrendForce (June 2, 2026) that full production at the Taylor 2nm fab will begin in 2027, not end-2026 as previously stated. The CHIPS Act award has been finalized at $4.745B (reduced from $6.4B) as total planned investment scaled from $44B to $37B. Trial operations are underway; mass-production readiness is now targeted for Q4 2026 with actual volume production in early 2027. Tesla holds a ~$16.5B capacity agreement for AI6 chips. Samsung's U.S. headquarters is also reportedly relocating to Texas in 2026.",
+    "cre": "Large-format advanced manufacturing campus in Taylor (Williamson County), TX — approximately 1,200+ acres. Production delay to 2027 extends the active construction and equipment-installation phase, sustaining near-term demand for contractor laydown yards, oversized-load staging areas, and industrial outdoor storage. Longer ramp timeline also defers the full workforce influx, moderating near-term multifamily pressure but extending the development window for Welcome Group build-to-suit opportunities in the Taylor/Georgetown corridor.",
+    "src": [
+      "https://www.trendforce.com/news/2026/06/02/news-samsung-accelerates-u-s-expansion-as-taylor-fab-targets-2027-start-hq-reportedly-moves-to-texas-in-2026/",
+      "https://www.sammyfans.com/2026/06/12/samsung-confirms-late-2026-2nm-chip-production-in-taylor/amp/",
+      "https://markets.financialcontent.com/wral/article/tokenring-2025-12-22-samsungs-silicon-setback-subsidy-cuts-and-taylor-fab-delays-signal-a-crisis-in-us-semiconductor-ambitions"
+    ],
+    "changeNote": "Updates known project 'Samsung Electronics | Samsung Austin Semiconductor — Taylor Foundry Campus | Taylor, TX'. Key changes: (1) Mass production start formally confirmed as 2027 by Samsung VP at SAFE Forum USA May 28 2026 — a real timeline slip from the prior 'end-of-2026' target; (2) CHIPS Act award finalized at $4.745B (down from $6.4B proposed); (3) total capex investment scaled to $37B (down from $44B); (4) Samsung U.S. HQ relocation to Texas reported.",
+    "lastSeen": "2026-06-22",
+    "confidence": "high",
+    "review": false
+  },
+  {
+    "co": "Wolfspeed",
+    "site": "John Palmour Manufacturing Center for Silicon Carbide — production readiness achieved; initial 200mm SiC crystal boule growth underway; first wafer shipments to Mohawk Valley commenced",
+    "city": "Siler City",
+    "st": "NC",
+    "lat": 35.7243,
+    "lng": -79.4623,
+    "type": "materials",
+    "capex": 5,
+    "chips": null,
+    "date": "2026-02",
+    "delayed": false,
+    "sf": "2000000",
+    "sum": "Wolfspeed's John Palmour Manufacturing Center (The JP) in Siler City, NC achieved production readiness in late 2025 and is now actively growing its first batches of 200mm silicon carbide crystal boules. Initial wafer shipments to the Mohawk Valley Fab in New York have begun. The facility emerged from Wolfspeed's Chapter 11 bankruptcy (filed and resolved in 2025) with a restructured balance sheet, and is now operating on a self-funded, disciplined ramp plan tied to market recovery in SiC demand. The $750M CHIPS Act grant (contingent on refinancing) was not received prior to bankruptcy; CHIPS funding status post-restructuring is unconfirmed in current sources. The 445-acre, 2-million-sq-ft facility remains the world's largest planned 200mm SiC materials plant.",
+    "cre": "Two-million-square-foot industrial manufacturing facility on a 445-acre campus in Chatham County (Siler City), NC — now operational at initial production scale. Ramp-up is ongoing and disciplined, sustaining demand for chemical/gas supply logistics, specialty industrial outdoor storage, and incremental workforce housing. The post-bankruptcy operating posture constrains near-term expansion capex but confirms the asset is producing — a positive signal for Welcome Group's broader NC industrial land thesis near the Research Triangle.",
+    "src": [
+      "https://constructionreviewonline.com/wolfspeeds-5b-silicon-carbide-factory-in-chatham-county-nears-completion/"
+    ],
+    "changeNote": "Updates known project 'Wolfspeed | John Palmour Manufacturing Center for Silicon Carbide | Siler City, NC'. Key changes: facility has now achieved production readiness (late 2025) and is actively growing first 200mm SiC crystal boules with initial wafer shipments to Mohawk Valley underway — a confirmed production-start milestone. Company emerged from Chapter 11 bankruptcy in September 2025 with a restructured balance sheet and self-funded ramp plan.",
+    "lastSeen": "2026-06-22",
+    "confidence": "low",
+    "review": true
   }
 ]
