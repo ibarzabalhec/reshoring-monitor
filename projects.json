@@ -354,5 +354,76 @@
     "lastSeen": "2026-06-22",
     "confidence": "low",
     "review": true
+  },
+  {
+    "co": "Texas Instruments",
+    "site": "Sherman Mega-Site — SM2 fab (second of four 300mm wafer fabs), shell construction complete; cleanroom installation and tool-in scheduled 2026",
+    "city": "Sherman",
+    "st": "TX",
+    "lat": 33.636,
+    "lng": -96.609,
+    "type": "anchor",
+    "capex": 40,
+    "chips": 1.61,
+    "date": "2026-06",
+    "delayed": false,
+    "sf": "1,400,000 sq ft total cleanroom across four fabs (combined site)",
+    "sum": "TI's Sherman mega-site has reached a major construction milestone: the exterior shell of the second 300mm wafer fab (SM2) is fully complete, with cleanroom fit-out and equipment installation now scheduled to begin in 2026. SM1 remains in active production ramp. The four-fab campus will ultimately deliver 1.4 million sf of cleanroom space and up to 3,000 direct jobs, creating sustained demand for industrial land, utilities infrastructure, and supplier facilities across the Texoma corridor.",
+    "cre": "Shell-complete industrial building adjacent to operational SM1 fab; cleanroom tenant-improvement and process-equipment procurement cycle now beginning — prime window for supplier facilities, specialty-gas plants, and logistics campuses within the Sherman industrial market.",
+    "src": [
+      "https://www.ti.com/about-ti/company/ti-at-a-glance/manufacturing.html",
+      "https://www.ti.com/about-ti/newsroom/news-releases/2025/texas-instruments-begins-production-at-its-newest-300mm-semiconductor-manufacturing-facility-in-sherman-texas.html"
+    ],
+    "changeNote": "Updates known project 'Texas Instruments | Sherman Mega-Site — SM1 fab': new milestone — SM2 shell construction confirmed complete per TI's official manufacturing page; cleanroom installation and tool positioning now scheduled to begin in 2026, advancing the site from a single-fab to a two-fab active buildout.",
+    "lastSeen": "2026-06-29",
+    "confidence": "high",
+    "review": false
+  },
+  {
+    "co": "Lumentum",
+    "site": "Lumentum InP Photonics Manufacturing Facility — Greensboro Campus (acquired from Qorvo)",
+    "city": "Greensboro",
+    "st": "NC",
+    "lat": 36.073,
+    "lng": -79.792,
+    "type": "anchor",
+    "capex": null,
+    "chips": null,
+    "date": "2026-03",
+    "delayed": false,
+    "sf": "240,000 sq ft",
+    "sum": "Lumentum acquired a 240,000 sf semiconductor fabrication facility in Greensboro from Qorvo and held a ribbon-cutting ceremony in late April 2026. The site will be retrofitted to produce indium phosphide (InP)-based continuous-wave and ultra-high-power lasers for AI data centers, with NVIDIA as a committed anchor customer. Production ramp is targeted for mid-2028 as equipment upgrades and process integration proceed. Lumentum plans to invest hundreds of millions of dollars over several years and preserve or create more than 400 U.S. manufacturing jobs.",
+    "cre": "Existing 240,000 sf industrial/cleanroom building repositioned as an InP wafer fab; multi-year capital reinvestment cycle now underway — creates near-term demand for specialty-gas, chemical-supply, and precision-equipment facilities in the Greensboro industrial market. Workforce transfer included in acquisition, reducing greenfield leasing risk for adjacent support tenants.",
+    "src": [
+      "https://investor.lumentum.com/financial-news-releases/news-details/2026/Lumentum-Announces-New-U-S--Manufacturing-Facility-to-Produce-Advanced-Lasers-for-the-Worlds-Largest-AI-Data-Centers/default.aspx",
+      "https://convergedigest.com/lumentum-expands-u-s-photonics-manufacturing-with-north-carolina-facility/"
+    ],
+    "changeNote": "",
+    "lastSeen": "2026-06-29",
+    "confidence": "high",
+    "review": false
+  },
+  {
+    "co": "Vulcan Elements",
+    "site": "Vulcan Elements Rare Earth Magnet Manufacturing Facility — Benson Campus",
+    "city": "Benson",
+    "st": "NC",
+    "lat": 35.382,
+    "lng": -78.546,
+    "type": "materials",
+    "capex": 0.918,
+    "chips": 0.05,
+    "date": "2025-11",
+    "delayed": false,
+    "sf": "1,000,000 sq ft",
+    "sum": "Vulcan Elements selected Benson, NC (Johnston County) for a $918M facility that will be the largest rare earth magnet plant outside China, with 10,000 metric tonnes of annual capacity and 1,000 jobs. Funding includes a $620M DOD Office of Strategic Capital direct loan and $50M in CHIPS Act incentives. The facility supplies neodymium-iron-boron (NdFeB) magnets that are critical inputs for semiconductor fabrication equipment, AI data-center motors, robotics, and defense systems. A March 2026 supply MOU with Ucore and a summer 2026 workforce-training launch at Johnston Community College signal active pre-construction mobilization.",
+    "cre": "Greenfield 1-million-sf advanced manufacturing campus in Johnston County; site proximate to I-40/I-95 interchange and Research Triangle Park. The DOD/CHIPS-backed capital stack substantially de-risks the project for surrounding industrial land demand — supplier, logistics, and workforce-housing needs will activate the Benson/Four Oaks industrial submarket over the next 24–36 months.",
+    "src": [
+      "https://vulcanelements.com/vulcan-elements-selects-benson-north-carolina-for-1-billion-magnet-facility/"
+    ],
+    "changeNote": "",
+    "lastSeen": "2026-06-29",
+    "confidence": "low",
+    "review": true
   }
 ]
